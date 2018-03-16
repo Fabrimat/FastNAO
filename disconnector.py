@@ -24,6 +24,9 @@ NAO_IP = "127.0.0.1"
 session = qi.Session()
 ChorDisconnect = None
 memory = None
+ChorDisconnect = None
+pip = None
+pport = None
 
 class CorDisconnectModule(ALModule):
 	def __init__(self, name):
@@ -87,8 +90,6 @@ def main():
 		pport=9559)
 
 	(opts, args_) = parser.parse_args()
-	global pip
-	global pport
 	pip   = opts.pip
 	pport = opts.pport
 	
@@ -99,7 +100,6 @@ def main():
 	   0, 
 	   pip,
 	   pport)
-	global ChorDisconnect
 	ChorDisconnect = CorDisconnectModule("ChorDisconnect")
 	
 	try:
