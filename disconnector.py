@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.7'
+__version__ = '0.7.1'
 
 import sys
 import time
