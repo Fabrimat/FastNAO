@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.6'
+__version__ = '0.7'
 
 import sys
 import time
@@ -31,7 +31,6 @@ class CorDisconnectModule(ALModule):
 		
 		try:
 			self.tts = ALProxy("ALTextToSpeech")
-			self.tts.setLanguage("English")
 		except:
 			self.logger.warn("ALTextToSpeech is not available")
 			self.tts = None
@@ -57,6 +56,7 @@ class CorDisconnectModule(ALModule):
 			
 	def disconnect(self):
 		services = session.services()
+		self.tts.setLanguage("English")
 		removed = False
 		for s in services :
 			strName = s["name"];
