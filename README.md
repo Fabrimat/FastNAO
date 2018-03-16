@@ -11,6 +11,7 @@ Upload the script on the robot, for instance to `/home/nao/disconnector.py`, the
 `/home/nao/disconnector.py`
 
 Then restart NAOqi.
+Now, you just have to press 3 times the Nao's chest button to forcefully disconnect Choregraphe
 
 ## Requirements
 * A Nao Robot.
