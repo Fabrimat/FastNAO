@@ -22,4 +22,4 @@ You can help me by <a href="https://github.com/Fabrimat/Nao-ChoregrapheDisconnec
 ChoregrapheDisconnector is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for more information.
 
 ## Project Status & Download
-ChoregrapheDisconnector's current version is **0.7**. You can download the latest release from <a href="https://github.com/Fabrimat/Nao-ChoregrapheDisconnector/releases/tag/v0.7">here</a>. Otherwise you can get the latest development version by cloning this repository.
+ChoregrapheDisconnector's current version is **0.7.1**. You can download the latest release from <a href="https://github.com/Fabrimat/Nao-ChoregrapheDisconnector/releases/tag/v0.7.1">here</a>. Otherwise you can get the latest development version by cloning this repository.
