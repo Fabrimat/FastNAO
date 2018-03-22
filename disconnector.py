@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8'
+__version__ = '0.8.1'
 
 import sys
 import time
@@ -80,62 +80,87 @@ class CorMenuModule(ALModule):
 	def onTripleChest(self):
 		language = tts.getLanguage()
 		tts.setLanguage("English")
-		pass
+		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
+			self.getName())
+			
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontHead")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleHead")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onReatHead")
 	
 	def onFrontHead(self):
-		if menuVal == -1:
-			menuVal = 1
-		elif menuVal >= 1 and < len(menu)-1:
+		if menuVal >= 0 and < len(menu)-1:
 			menuVal += 1
 		elif menuVal == len(menu)-1:
 			menuVal = 1
 		else:
-			pass
+			tts.say("Unknown error.")
+			return
+		
+		tts.say(menu[menuVal] + " selected!")
 		
 	def onMiddleHead(self):
 		if menu[menuVal] == "init":
-			pass
+			tts.say("Nothing selected! Quitting.")
 		elif menu[menuVal] == "disconnect":
-			pass
+			self.disconnect()
 		elif menu[menuVal] == "activateWiFi":
-			pass
-		elif menu[menuVal] == "status":
-			pass
+			self.activateWiFi()
 		elif menu[menuVal] == "deactivateWiFi":
-			pass
+			self.deactivateWiFi()
+		elif menu[menuVal] == "status":
+			self.status()
 		else:
-			pass
+			tts.say("Unknown error.")
+		
+		memory.unsubscribeToEvent("Head",
+			self.getName())
+		
+		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
+			self.getName(),
+			"onTripleChest")
 		tts.setLanguage(language)
+		menuVal = 0
 		
 	def onReatHead(self):
-		if menuVal == -1:
-			menuVal = 2
+		if menuVal <= 1:
+			menuVal = len(menu)-1
 		elif menuVal == <= len(menu)-1 and >1 :
 			menuVal -= 1
-		elif menuVal == 1:
-			menuVal = len(menu)-1
 		else:
-			pass
-		pass
+			tts.say("Unknown error.")
+			return
+		
+		tts.say(menu[menuVal] + " selected!")
 		
 	def activateWiFi(self):
 		if connectionManager is None:
-			# Error
+			tts.say("Error, ALConnectionManager is no longer avaiable")
 			return
 		if not connectionManager.getTetheringEnable("wifi"):
 			connectionManager.setCountry(wifiCountry)
 			connectionManager.enableTethering("wifi", tetheringSSID, tetheringPassword)
+			tts.say("Wifi Tethering activated.")
 		else:
-			# Already active
+			tts.say("Wifi Tethering is already active.")
 			
 	def deactivateWiFi(self):
 		if connectionManager is None:
-			# Error
+			tts.say("Error, ALConnectionManager is no longer avaiable")
 			return
 		if connectionManager.getTetheringEnable("wifi"):
 			connectionManager.disableTethering("wifi")
+			tts.say("Wifi Tethering deactivated.")
 		else:
-			# Already inactive
+			tts.say("Wifi Tethering is already inactive.")
+		
+	def status(self):
+		pass
 		
 def main():
 	parser = OptionParser()
@@ -154,9 +179,6 @@ def main():
 	pip   = opts.pip
 	pport = opts.pport
 	
-	
-	
-	
 	session.connect("tcp://" + str(pip) + ":" + str(pport))
 	myBroker = ALBroker("myBroker",
 	   "0.0.0.0",
@@ -169,7 +191,6 @@ def main():
 		while True:
 			time.sleep(1)
 	except KeyboardInterrupt:
-		print
 		print "Interrupted by user, shutting down"
 		myBroker.shutdown()
 		sys.exit(0)
