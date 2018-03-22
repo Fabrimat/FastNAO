@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.7.1'
+__version__ = '0.8'
 
 import sys
 import time
@@ -21,45 +21,47 @@ except:
 
 NAO_IP = "127.0.0.1"
 
+tetheringSSID = "Nao-WiFi"
+tetheringPassword = "Nao12345"
+wifiCountry = "IT"
+
+language = None
 session = qi.Session()
-ChorDisconnect = None
+CorMenuModule = None
 memory = None
-ChorDisconnect = None
+tts = None
+connectionManager = None
 pip = None
 pport = None
 
-class CorDisconnectModule(ALModule):
+menuVal = 0
+
+menu = ["init","disconnect","activateWiFi","deactivateWiFi","status"]
+
+class CorMenuModule(ALModule):
 	def __init__(self, name):
 		ALModule.__init__(self, name)
 		
 		try:
-			self.tts = ALProxy("ALTextToSpeech")
+			tts = ALProxy("ALTextToSpeech")
 		except:
 			self.logger.warn("ALTextToSpeech is not available")
-			self.tts = None
+			tts = None
+			
+		try:
+			connectionManager = ALProxy("ALConnectionManager", "127.0.0.1", 9559)
+		except:
+			self.logger.warn("ALConnectionManager is not available, hotspot cannot be created")
+			connectionManager = None
 			
 			
-		global memory
 		memory = ALProxy("ALMemory")
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
-			"ChorDisconnect",
-			"onTriplePress")
-		pass
-
-	def onTriplePress(self, *_args):
-		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
-			"ChorDisconnect")
-		
-		self.disconnect()
-		
-		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
-			"ChorDisconnect",
-			"onTriplePress")
-		pass
-			
+			self.getName(),
+			"onTripleChest")
+	
 	def disconnect(self):
 		services = session.services()
-		self.tts.setLanguage("English")
 		removed = False
 		for s in services :
 			strName = s["name"];
@@ -70,11 +72,70 @@ class CorDisconnectModule(ALModule):
 			if strName in ["ALChoregraphe", "ALChoregrapheRecorder"] :
 				session.unregisterService( serviceID )
 				if not removed:
-					self.tts.say("Choregraphe connection removed successfully.")
+					tts.say("Choregraphe connection removed successfully.")
 				removed = True
 		if not removed:
-			self.tts.say("Choregraphe connection not found.")
+			tts.say("Choregraphe connection not found.")
+		
+	def onTripleChest(self):
+		language = tts.getLanguage()
+		tts.setLanguage("English")
 		pass
+	
+	def onFrontHead(self):
+		if menuVal == -1:
+			menuVal = 1
+		elif menuVal >= 1 and < len(menu)-1:
+			menuVal += 1
+		elif menuVal == len(menu)-1:
+			menuVal = 1
+		else:
+			pass
+		
+	def onMiddleHead(self):
+		if menu[menuVal] == "init":
+			pass
+		elif menu[menuVal] == "disconnect":
+			pass
+		elif menu[menuVal] == "activateWiFi":
+			pass
+		elif menu[menuVal] == "status":
+			pass
+		elif menu[menuVal] == "deactivateWiFi":
+			pass
+		else:
+			pass
+		tts.setLanguage(language)
+		
+	def onReatHead(self):
+		if menuVal == -1:
+			menuVal = 2
+		elif menuVal == <= len(menu)-1 and >1 :
+			menuVal -= 1
+		elif menuVal == 1:
+			menuVal = len(menu)-1
+		else:
+			pass
+		pass
+		
+	def activateWiFi(self):
+		if connectionManager is None:
+			# Error
+			return
+		if not connectionManager.getTetheringEnable("wifi"):
+			connectionManager.setCountry(wifiCountry)
+			connectionManager.enableTethering("wifi", tetheringSSID, tetheringPassword)
+		else:
+			# Already active
+			
+	def deactivateWiFi(self):
+		if connectionManager is None:
+			# Error
+			return
+		if connectionManager.getTetheringEnable("wifi"):
+			connectionManager.disableTethering("wifi")
+		else:
+			# Already inactive
 		
 def main():
 	parser = OptionParser()
@@ -94,13 +155,15 @@ def main():
 	pport = opts.pport
 	
 	
+	
+	
 	session.connect("tcp://" + str(pip) + ":" + str(pport))
 	myBroker = ALBroker("myBroker",
 	   "0.0.0.0",
 	   0, 
 	   pip,
 	   pport)
-	ChorDisconnect = CorDisconnectModule("ChorDisconnect")
+	CorMenuModule = CorMenuModule("CorMenuModule")
 	
 	try:
 		while True:
