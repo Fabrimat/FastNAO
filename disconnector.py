@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 import sys
 import time
@@ -33,14 +33,23 @@ tts = None
 connectionManager = None
 pip = None
 pport = None
+autoLife = None
 
 menuVal = 0
 
-menu = ["init","disconnect","activateWiFi","deactivateWiFi","status"]
+menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggle","changeOffsetFromFloor","changeVolume","status","close"]
 
 class CorMenuModule(ALModule):
 	def __init__(self, name):
 		ALModule.__init__(self, name)
+		
+		self.changeOffset = False
+		
+		try:
+			autoLife = ALProxy("ALAutonomousLife")
+		except:
+			self.logger.warn("ALAutonomousLife is not available")
+			autoLife = None
 		
 		try:
 			tts = ALProxy("ALTextToSpeech")
@@ -53,7 +62,6 @@ class CorMenuModule(ALModule):
 		except:
 			self.logger.warn("ALConnectionManager is not available, hotspot cannot be created")
 			connectionManager = None
-			
 			
 		memory = ALProxy("ALMemory")
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
@@ -94,6 +102,10 @@ class CorMenuModule(ALModule):
 			"onReatHead")
 	
 	def onFrontHead(self):
+		if self.changeOffset:
+			self.offset += 1
+			return
+	
 		if menuVal >= 0 and < len(menu)-1:
 			menuVal += 1
 		elif menuVal == len(menu)-1:
@@ -105,6 +117,12 @@ class CorMenuModule(ALModule):
 		tts.say(menu[menuVal] + " selected!")
 		
 	def onMiddleHead(self):
+		if self.changeOffset:
+			autoLife.setRobotOffsetFromFloor(self.offset)
+			self.changeOffset = False
+			tts.say("Offset set!")
+			return
+	
 		if menu[menuVal] == "init":
 			tts.say("Nothing selected! Quitting.")
 		elif menu[menuVal] == "disconnect":
@@ -115,10 +133,20 @@ class CorMenuModule(ALModule):
 			self.deactivateWiFi()
 		elif menu[menuVal] == "status":
 			self.status()
+		elif menu[menuVal] == "autonomousLifeToggle":
+			self.autonomousLifeToggle()
+		elif menu[menuVal] == "changeOffsetFromFloor":
+			self.changeOffset = True
+			self.offset = autoLife.getRobotOffsetFromFloor()
+			return
 		else:
 			tts.say("Unknown error.")
 		
-		memory.unsubscribeToEvent("Head",
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 		
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
@@ -128,6 +156,12 @@ class CorMenuModule(ALModule):
 		menuVal = 0
 		
 	def onReatHead(self):
+		if self.changeOffset:
+			if self.offset > 0
+				self.offset -= 1
+			else
+				tts.say("Cannot do it")
+			return
 		if menuVal <= 1:
 			menuVal = len(menu)-1
 		elif menuVal == <= len(menu)-1 and >1 :
@@ -160,7 +194,17 @@ class CorMenuModule(ALModule):
 			tts.say("Wifi Tethering is already inactive.")
 		
 	def status(self):
+		tts.say("Woops! I don't know what to do!")
 		pass
+		
+	def autonomousLifeToggle(self):
+		lifeState = autoLife.getState()
+		if lifeState == "solitary" or lifeState == "interactive":
+			autoLife.setState("disabled")
+		elif lifeState == "safeguard":
+			pass # Stand Up from Choregraphe
+		else:
+			autoLife.setState("interactive")
 		
 def main():
 	parser = OptionParser()
