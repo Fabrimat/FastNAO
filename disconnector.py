@@ -3,7 +3,14 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.2'
+__version__ = '0.8.3'
+
+NAO_IP = "127.0.0.1"
+NAO_PORT = 9559
+
+tetheringSSID = "Nao-WiFi"
+tetheringPassword = "nao12345"
+wifiCountry = "IT"
 
 import sys
 import time
@@ -19,21 +26,10 @@ except:
 	print("NAOqi Python SDK not found")
 	sys.exit(1)
 
-NAO_IP = "127.0.0.1"
-
-tetheringSSID = "Nao-WiFi"
-tetheringPassword = "Nao12345"
-wifiCountry = "IT"
-
-language = None
 session = qi.Session()
 CorMenuModule = None
-memory = None
-tts = None
-connectionManager = None
 pip = None
 pport = None
-autoLife = None
 
 menuVal = 0
 
@@ -46,25 +42,25 @@ class CorMenuModule(ALModule):
 		self.changeOffset = False
 		
 		try:
-			autoLife = ALProxy("ALAutonomousLife")
+			self.autoLife = ALProxy("ALAutonomousLife")
 		except:
 			self.logger.warn("ALAutonomousLife is not available")
-			autoLife = None
+			self.autoLife = None
 		
 		try:
-			tts = ALProxy("ALTextToSpeech")
+			self.tts = ALProxy("ALTextToSpeech")
 		except:
 			self.logger.warn("ALTextToSpeech is not available")
-			tts = None
+			self.tts = None
 			
 		try:
-			connectionManager = ALProxy("ALConnectionManager", "127.0.0.1", 9559)
+			self.connectionManager = ALProxy("ALConnectionManager", NAO_IP, NAO_PORT)
 		except:
 			self.logger.warn("ALConnectionManager is not available, hotspot cannot be created")
-			connectionManager = None
+			self.connectionManager = None
 			
-		memory = ALProxy("ALMemory")
-		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
+		self.memory = ALProxy("ALMemory")
+		self.memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName(),
 			"onTripleChest")
 	
@@ -80,51 +76,86 @@ class CorMenuModule(ALModule):
 			if strName in ["ALChoregraphe", "ALChoregrapheRecorder"] :
 				session.unregisterService( serviceID )
 				if not removed:
-					tts.say("Choregraphe connection removed successfully.")
+					self.tts.say("Choregraphe connection removed successfully.")
 				removed = True
 		if not removed:
-			tts.say("Choregraphe connection not found.")
+			self.tts.say("Choregraphe connection not found.")
 		
 	def onTripleChest(self):
-		language = tts.getLanguage()
-		tts.setLanguage("English")
-		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
+		self.memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName())
-			
-		memory.subscribeToEvent("FrontTactilTouched",
+		
+		self.language = tts.getLanguage()
+		self.tts.setLanguage("English")
+		
+		self.memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
-		memory.subscribeToEvent("MiddleTactilTouched",
+		self.memory.subscribeToEvent("MiddleTactilTouched",
 			self.getName(),
 			"onMiddleHead")
-		memory.subscribeToEvent("RearTactilTouched",
+		self.memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
 			"onReatHead")
 	
-	def onFrontHead(self):
-		if self.changeOffset:
-			self.offset += 1
-			return
+	def onFrontOffset(self):
+		self.memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		
+		self.offset += 1
+		
+		self.memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontOffset")
+		
+	def onMiddleOffset(self):
+		self.memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		
+		self.autoLife.setRobotOffsetFromFloor(self.offset)
+		self.changeOffset = False
+		self.tts.say("Offset set!")
+		
+		self.memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleOffset")
 	
+	def onRearOffset(self):
+		self.memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		
+		if self.offset > 0
+			self.offset -= 1
+		else
+			self.tts.say("Cannot do it")
+			
+		self.memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onRearOffset")
+	
+	def onFrontHead(self):
 		if menuVal >= 0 and < len(menu)-1:
 			menuVal += 1
 		elif menuVal == len(menu)-1:
 			menuVal = 1
 		else:
-			tts.say("Unknown error.")
+			self.tts.say("Unknown error.")
 			return
 		
-		tts.say(menu[menuVal] + " selected!")
+		self.tts.say(menu[menuVal] + " selected!")
 		
 	def onMiddleHead(self):
-		if self.changeOffset:
-			autoLife.setRobotOffsetFromFloor(self.offset)
-			self.changeOffset = False
-			tts.say("Offset set!")
-			return
-	
+		self.memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		self.memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		self.memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		
+		flag_Return = False
+		
 		if menu[menuVal] == "init":
-			tts.say("Nothing selected! Quitting.")
+			self.tts.say("Nothing selected! Quitting.")
 		elif menu[menuVal] == "disconnect":
 			self.disconnect()
 		elif menu[menuVal] == "activateWiFi":
@@ -137,74 +168,73 @@ class CorMenuModule(ALModule):
 			self.autonomousLifeToggle()
 		elif menu[menuVal] == "changeOffsetFromFloor":
 			self.changeOffset = True
-			self.offset = autoLife.getRobotOffsetFromFloor()
-			return
+			flag_Return = True
+			self.offset = self.autoLife.getRobotOffsetFromFloor()
 		else:
-			tts.say("Unknown error.")
+			self.tts.say("Unknown error.")
 		
-		memory.unsubscribeToEvent("FrontTactilTouched",
-			self.getName())
-		memory.unsubscribeToEvent("MiddleTactilTouched",
-			self.getName())
-		memory.unsubscribeToEvent("RearTactilTouched",
-			self.getName())
-		
-		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
-			self.getName(),
-			"onTripleChest")
-		tts.setLanguage(language)
-		menuVal = 0
+		if not flag_Return:
+			self.tts.setLanguage(self.language)
+			menuVal = 0
+			
+			self.memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
+				self.getName(),
+				"onTripleChest")
+		else:
+			self.memory.subscribeToEvent("FrontTactilTouched",
+				self.getName(),
+				"onFrontOffset")
+			self.memory.subscribeToEvent("MiddleTactilTouched",
+				self.getName(),
+				"onMiddleOffset")
+			self.memory.subscribeToEvent("RearTactilTouched",
+				self.getName(),
+				"onRearOffset")
 		
 	def onReatHead(self):
-		if self.changeOffset:
-			if self.offset > 0
-				self.offset -= 1
-			else
-				tts.say("Cannot do it")
-			return
 		if menuVal <= 1:
 			menuVal = len(menu)-1
 		elif menuVal == <= len(menu)-1 and >1 :
 			menuVal -= 1
 		else:
-			tts.say("Unknown error.")
+			self.tts.say("Unknown error.")
 			return
 		
-		tts.say(menu[menuVal] + " selected!")
+		self.tts.say(menu[menuVal] + " selected!")
 		
 	def activateWiFi(self):
-		if connectionManager is None:
-			tts.say("Error, ALConnectionManager is no longer avaiable")
+		if self.connectionManager is None:
+			self.tts.say("Error, ALConnectionManager is no longer avaiable")
 			return
-		if not connectionManager.getTetheringEnable("wifi"):
-			connectionManager.setCountry(wifiCountry)
-			connectionManager.enableTethering("wifi", tetheringSSID, tetheringPassword)
-			tts.say("Wifi Tethering activated.")
+		if not self.connectionManager.getTetheringEnable("wifi"):
+			self.connectionManager.setCountry(wifiCountry)
+			self.connectionManager.enableTethering("wifi", tetheringSSID, tetheringPassword)
+			self.tts.say("Wifi Tethering activated.")
 		else:
-			tts.say("Wifi Tethering is already active.")
+			self.tts.say("Wifi Tethering is already active.")
 			
 	def deactivateWiFi(self):
-		if connectionManager is None:
-			tts.say("Error, ALConnectionManager is no longer avaiable")
+		if self.connectionManager is None:
+			self.tts.say("Error, ALConnectionManager is no longer avaiable")
 			return
-		if connectionManager.getTetheringEnable("wifi"):
-			connectionManager.disableTethering("wifi")
-			tts.say("Wifi Tethering deactivated.")
+		if self.connectionManager.getTetheringEnable("wifi"):
+			self.connectionManager.disableTethering("wifi")
+			self.tts.say("Wifi Tethering deactivated.")
 		else:
-			tts.say("Wifi Tethering is already inactive.")
+			self.tts.say("Wifi Tethering is already inactive.")
 		
 	def status(self):
-		tts.say("Woops! I don't know what to do!")
+		self.tts.say("Woops! I don't know what to do!")
 		pass
 		
 	def autonomousLifeToggle(self):
-		lifeState = autoLife.getState()
+		lifeState = self.autoLife.getState()
 		if lifeState == "solitary" or lifeState == "interactive":
-			autoLife.setState("disabled")
+			self.autoLife.setState("disabled")
 		elif lifeState == "safeguard":
 			pass # Stand Up from Choregraphe
 		else:
-			autoLife.setState("interactive")
+			self.autoLife.setState("interactive")
 		
 def main():
 	parser = OptionParser()
@@ -217,7 +247,7 @@ def main():
 		type="int")
 	parser.set_defaults(
 		pip=NAO_IP,
-		pport=9559)
+		pport=NAO_PORT)
 
 	(opts, args_) = parser.parse_args()
 	pip   = opts.pip
