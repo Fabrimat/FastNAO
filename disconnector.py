@@ -259,7 +259,44 @@ class CorMenuModule(ALModule):
 			self.tts.say("Wifi Tethering is already inactive.")
 		
 	def status(self):
-		self.tts.say("Woops! I don't know what to do!")
+	
+		
+		global memory
+		realNotVirtual = False
+		try:
+			memory.getData( "DCM/Time" )
+			if( memory.getData( "DCM/Simulation" ) != 1 ):
+				realNotVirtual = True
+			else:
+				import os
+				realNotVirtual = os.path.exists("/home/nao")
+		except:
+			pass 
+
+		if realNotVirtual:
+			import socket
+			robotName = socket.gethostname()
+			naoName = robotName
+		else:
+			naoName = "virtual-robot"
+		
+		self.tts.say("My name is %s" %(naoName))
+		
+		batteryCharge = memory.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value")
+		batteryCurrent = memory.getData("Device/SubDeviceList/Battery/Current/Sensor/Value")
+		batteryTemp = memory.getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value")
+		self.tts.say("My battery is at %d percent with %d Ampere and the temperature is at %d percent" %(batteryCharge*100, batteryCurrent, batteryTemp))
+		
+		autoLifeStatus = self.autoLife.getState()
+		self.tts.say("My autonomous life status is: %s" %(autoLifeStatus))
+		
+		if(self.connectionManager.getTetheringEnable("wifi")):
+			self.tts.say("WiFi is active")
+			
+			self.tts.say("WiFi SSID is %s" &(ssid))
+			self.tts.say("WiFi password is %s" &(password))
+		else:
+			self.tts.say("WiFi is not active")
 		pass
 		
 	def autonomousLifeToggle(self):
