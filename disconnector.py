@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 NAO_IP = "127.0.0.1"
 NAO_PORT = 9559
@@ -27,9 +27,10 @@ except:
 	sys.exit(1)
 
 session = qi.Session()
-CorMenuModule = None
+CorMenu = None
 pip = None
 pport = None
+memory = None
 
 menuVal = 0
 
@@ -38,7 +39,6 @@ menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggl
 class CorMenuModule(ALModule):
 	def __init__(self, name):
 		ALModule.__init__(self, name)
-		
 		self.changeOffset = False
 		
 		try:
@@ -58,11 +58,13 @@ class CorMenuModule(ALModule):
 		except:
 			self.logger.warn("ALConnectionManager is not available, hotspot cannot be created")
 			self.connectionManager = None
-			
-		self.memory = ALProxy("ALMemory")
-		self.memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
+		
+		global memory
+		memory = ALProxy("ALMemory")
+		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName(),
 			"onTripleChest")
+	
 	
 	def disconnect(self):
 		services = session.services()
@@ -81,60 +83,67 @@ class CorMenuModule(ALModule):
 		if not removed:
 			self.tts.say("Choregraphe connection not found.")
 		
-	def onTripleChest(self):
-		self.memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
+	def onTripleChest(self, *_args):
+		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName())
 		
-		self.language = tts.getLanguage()
+		self.language = self.tts.getLanguage()
 		self.tts.setLanguage("English")
 		
-		self.memory.subscribeToEvent("FrontTactilTouched",
+		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
-		self.memory.subscribeToEvent("MiddleTactilTouched",
+		memory.subscribeToEvent("MiddleTactilTouched",
 			self.getName(),
 			"onMiddleHead")
-		self.memory.subscribeToEvent("RearTactilTouched",
+		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
 			"onReatHead")
 	
-	def onFrontOffset(self):
-		self.memory.unsubscribeToEvent("FrontTactilTouched",
+	def onFrontOffset(self, *_args):
+		memory.unsubscribeToEvent("FrontTactilTouched",
 			self.getName())
 		
 		self.offset += 1
 		
-		self.memory.subscribeToEvent("FrontTactilTouched",
+		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontOffset")
 		
-	def onMiddleOffset(self):
-		self.memory.unsubscribeToEvent("MiddleTactilTouched",
+	def onMiddleOffset(self, *_args):
+		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
 		
 		self.autoLife.setRobotOffsetFromFloor(self.offset)
 		self.changeOffset = False
 		self.tts.say("Offset set!")
 		
-		self.memory.subscribeToEvent("MiddleTactilTouched",
+		memory.subscribeToEvent("MiddleTactilTouched",
 			self.getName(),
 			"onMiddleOffset")
 	
-	def onRearOffset(self):
-		self.memory.unsubscribeToEvent("RearTactilTouched",
+	def onRearOffset(self, *_args):
+		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 		
-		if self.offset > 0
+		if self.offset > 0:
 			self.offset -= 1
-		else
+		else:
 			self.tts.say("Cannot do it")
 			
-		self.memory.subscribeToEvent("RearTactilTouched",
+		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
 			"onRearOffset")
 	
-	def onFrontHead(self):
-		if menuVal >= 0 and < len(menu)-1:
+	def onFrontHead(self, *_args):
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		global menuVal
+		if menuVal >= 0 and menuVal < len(menu)-1:
 			menuVal += 1
 		elif menuVal == len(menu)-1:
 			menuVal = 1
@@ -143,17 +152,27 @@ class CorMenuModule(ALModule):
 			return
 		
 		self.tts.say(menu[menuVal] + " selected!")
-		
-	def onMiddleHead(self):
-		self.memory.unsubscribeToEvent("MiddleTactilTouched",
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontHead")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleHead")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onReatHead")
+			
+	def onMiddleHead(self, *_args):
+		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
-		self.memory.unsubscribeToEvent("FrontTactilTouched",
+		memory.unsubscribeToEvent("FrontTactilTouched",
 			self.getName())
-		self.memory.unsubscribeToEvent("RearTactilTouched",
+		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 		
 		flag_Return = False
 		
+		global menuVal
 		if menu[menuVal] == "init":
 			self.tts.say("Nothing selected! Quitting.")
 		elif menu[menuVal] == "disconnect":
@@ -177,31 +196,47 @@ class CorMenuModule(ALModule):
 			self.tts.setLanguage(self.language)
 			menuVal = 0
 			
-			self.memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
+			memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
 				self.getName(),
 				"onTripleChest")
 		else:
-			self.memory.subscribeToEvent("FrontTactilTouched",
+			memory.subscribeToEvent("FrontTactilTouched",
 				self.getName(),
 				"onFrontOffset")
-			self.memory.subscribeToEvent("MiddleTactilTouched",
+			memory.subscribeToEvent("MiddleTactilTouched",
 				self.getName(),
 				"onMiddleOffset")
-			self.memory.subscribeToEvent("RearTactilTouched",
+			memory.subscribeToEvent("RearTactilTouched",
 				self.getName(),
 				"onRearOffset")
 		
-	def onReatHead(self):
+	def onRearHead(self, *_args):
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		global menuVal
 		if menuVal <= 1:
 			menuVal = len(menu)-1
-		elif menuVal == <= len(menu)-1 and >1 :
+		elif menuVal == len(menu)-1 and len(menu)-1 > 1 :
 			menuVal -= 1
 		else:
 			self.tts.say("Unknown error.")
 			return
 		
 		self.tts.say(menu[menuVal] + " selected!")
-		
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontHead")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleHead")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onReatHead")
+			
 	def activateWiFi(self):
 		if self.connectionManager is None:
 			self.tts.say("Error, ALConnectionManager is no longer avaiable")
@@ -234,8 +269,10 @@ class CorMenuModule(ALModule):
 		elif lifeState == "safeguard":
 			pass # Stand Up from Choregraphe
 		else:
-			self.autoLife.setState("interactive")
+			self.autoLife.setState("solitary")
 		
+	def unload(self):
+		self.tts.setLanguage(self.language)
 def main():
 	parser = OptionParser()
 	parser.add_option("--pip",
@@ -259,13 +296,16 @@ def main():
 	   0, 
 	   pip,
 	   pport)
-	CorMenuModule = CorMenuModule("CorMenuModule")
+	
+	global CorMenu
+	CorMenu = CorMenuModule("CorMenu")
 	
 	try:
 		while True:
 			time.sleep(1)
 	except KeyboardInterrupt:
 		print "Interrupted by user, shutting down"
+		CorMenu.unload()
 		myBroker.shutdown()
 		sys.exit(0)
 
