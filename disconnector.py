@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.4'
+__version__ = '0.8.5'
 
 NAO_IP = "127.0.0.1"
 NAO_PORT = 9559
@@ -98,7 +98,7 @@ class CorMenuModule(ALModule):
 			"onMiddleHead")
 		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
-			"onReatHead")
+			"onRearHead")
 	
 	def onFrontOffset(self, *_args):
 		memory.unsubscribeToEvent("FrontTactilTouched",
@@ -142,7 +142,9 @@ class CorMenuModule(ALModule):
 			self.getName())
 		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
+			
 		global menuVal
+		global menu
 		if menuVal >= 0 and menuVal < len(menu)-1:
 			menuVal += 1
 		elif menuVal == len(menu)-1:
@@ -160,7 +162,7 @@ class CorMenuModule(ALModule):
 			"onMiddleHead")
 		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
-			"onReatHead")
+			"onRearHead")
 			
 	def onMiddleHead(self, *_args):
 		memory.unsubscribeToEvent("MiddleTactilTouched",
@@ -173,6 +175,7 @@ class CorMenuModule(ALModule):
 		flag_Return = False
 		
 		global menuVal
+		global menu
 		if menu[menuVal] == "init":
 			self.tts.say("Nothing selected! Quitting.")
 		elif menu[menuVal] == "disconnect":
@@ -217,14 +220,13 @@ class CorMenuModule(ALModule):
 			self.getName())
 		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
+		
 		global menuVal
+		global menu
 		if menuVal <= 1:
 			menuVal = len(menu)-1
-		elif menuVal == len(menu)-1 and len(menu)-1 > 1 :
-			menuVal -= 1
-		else:
-			self.tts.say("Unknown error.")
-			return
+		else :
+			menuVal = menuVal - 1
 		
 		self.tts.say(menu[menuVal] + " selected!")
 		memory.subscribeToEvent("FrontTactilTouched",
@@ -235,7 +237,7 @@ class CorMenuModule(ALModule):
 			"onMiddleHead")
 		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
-			"onReatHead")
+			"onRearHead")
 			
 	def activateWiFi(self):
 		if self.connectionManager is None:
