@@ -19,9 +19,9 @@ logger = logging.getLogger('LogScanner')
 logging.basicConfig(filename='naoDisconnector.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
 
 logging.info("Default values:")
-logging.info("NAO_IP: %s", %(NAO_IP))
+logging.info("NAO_IP: %s" %(NAO_IP))
 logging.info("NAO_PORT: %i" %(NAO_PORT))
-logging.info("tetheringSSID: %s", %(tetheringSSID))
+logging.info("tetheringSSID: %s" %(tetheringSSID))
 logging.info("tetheringPassword: %s" %(tetheringPassword))
 logging.info("wifiCountry: %s" %(wifiCountry))
 
@@ -108,6 +108,7 @@ class CorMenuModule(ALModule):
 			self.tts.say("Error removing Choregraphe connection.")
 		
 	def onTripleChest(self, *_args):
+		global memory
 		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName())
 		
@@ -128,6 +129,7 @@ class CorMenuModule(ALModule):
 			"onRearHead")
 	
 	def onFrontOffset(self, *_args):
+		global memory
 		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
 		memory.unsubscribeToEvent("FrontTactilTouched",
@@ -150,6 +152,7 @@ class CorMenuModule(ALModule):
 			"onRearOffset")
 		
 	def onMiddleOffset(self, *_args):
+		global memory
 		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
 		memory.unsubscribeToEvent("FrontTactilTouched",
@@ -163,6 +166,7 @@ class CorMenuModule(ALModule):
 		self.close()
 	
 	def onRearOffset(self, *_args):
+		global memory
 		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
 		memory.unsubscribeToEvent("FrontTactilTouched",
@@ -187,6 +191,7 @@ class CorMenuModule(ALModule):
 			"onRearOffset")
 	
 	def onFrontHead(self, *_args):
+		global memory
 		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
 		memory.unsubscribeToEvent("FrontTactilTouched",
@@ -360,29 +365,30 @@ class CorMenuModule(ALModule):
 			self.tts.say("WiFi is not active")
 		
 		previousTimeout = socket.getdefaulttimeout()
-        nTimeout = 10
-        tempReqs = "http://aldebaran.com/;http://www.google.com".split(';')
-        reqs = []
-        for tempReq in tempReqs:
-            reqs.append(tempReq.strip(" \n"))
-        socket.setdefaulttimeout(nTimeout * 1. / len(reqs))
-        bOk = False
-        for req in reqs:
-            try:
-                urllib2.urlopen(req)
-                bOk = True
-                break
-            except:
-                pass
-        if( self.bConnected == None ):
-            self.bConnected = not bOk
-        if( bOk and not self.bConnected ):
-            self.bConnected = True
-            self.tts.say("I am connected to the Internet")
-        if( not bOk and self.bConnected ):
-            self.bConnected = False
-            self.tts.say("I am not connected to the Internet")
-        socket.setdefaulttimeout(previousTimeout)
+		self.bConnected = None
+		nTimeout = 10
+		tempReqs = "http://aldebaran.com/;http://www.google.com".split(';')
+		reqs = []
+		for tempReq in tempReqs:
+			reqs.append(tempReq.strip(" \n"))
+		socket.setdefaulttimeout(nTimeout * 1. / len(reqs))
+		bOk = False
+		for req in reqs:
+			try:
+				urllib2.urlopen(req)
+				bOk = True
+				break
+			except:
+				pass
+		if( self.bConnected == None ):
+			self.bConnected = not bOk
+		if( bOk and not self.bConnected ):
+			self.bConnected = True
+			self.tts.say("I am connected to the Internet")
+		if( not bOk and self.bConnected ):
+			self.bConnected = False
+			self.tts.say("I am not connected to the Internet")
+		socket.setdefaulttimeout(previousTimeout)
 		
 		"""
 		ipv4
@@ -411,18 +417,19 @@ class CorMenuModule(ALModule):
 			self.autoLife.setState("solitary")
 		
 	def close(self):
+		global memory
 		self.tts.setLanguage(self.language)
 		self.menuVal = 0
 		
-		for sub in getSubscribers("MiddleTactilTouched")
+		for sub in memory.getSubscribers("MiddleTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("MiddleTactilTouched",
 				self.getName())
-		for sub in getSubscribers("FrontTactilTouched")
+		for sub in memory.getSubscribers("FrontTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("FrontTactilTouched",
 				self.getName())
-		for sub in getSubscribers("RearTactilTouched")
+		for sub in memory.getSubscribers("RearTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("RearTactilTouched",
 				self.getName())
@@ -435,19 +442,19 @@ class CorMenuModule(ALModule):
 		self.postureProxy.stopMove()
 		self.tts.setLanguage(self.language)
 		
-		for sub in getSubscribers("MiddleTactilTouched")
+		for sub in memory.getSubscribers("MiddleTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("MiddleTactilTouched",
 				self.getName())
-		for sub in getSubscribers("FrontTactilTouched")
+		for sub in memory.getSubscribers("FrontTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("FrontTactilTouched",
 				self.getName())
-		for sub in getSubscribers("RearTactilTouched")
+		for sub in memory.getSubscribers("RearTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("RearTactilTouched",
 				self.getName())
-		for sub in getSubscribers("ALChestButton/TripleClickOccurred")
+		for sub in memory.getSubscribers("ALChestButton/TripleClickOccurred"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
 				self.getName())
