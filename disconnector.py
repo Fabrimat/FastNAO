@@ -56,7 +56,6 @@ class CorMenuModule(ALModule):
 	
 	def __init__(self, name):
 		ALModule.__init__(self, name)
-		self.changeOffset = False
 		
 		try:
 			self.autoLife = ALProxy("ALAutonomousLife")
@@ -159,7 +158,6 @@ class CorMenuModule(ALModule):
 			self.getName())
 		
 		self.autoLife.setRobotOffsetFromFloor(self.offset)
-		self.changeOffset = False
 		self.tts.say("Offset set to %s!" %(self.offset))
 		
 		self.close()
@@ -238,7 +236,6 @@ class CorMenuModule(ALModule):
 		elif self.menu[self.menuVal] == "autonomousLifeToggle":
 			self.autonomousLifeToggle()
 		elif self.menu[self.menuVal] == "changeOffsetFromFloor":
-			self.changeOffset = True
 			flag_Return = True
 			self.offset = self.autoLife.getRobotOffsetFromFloor()
 		elif self.menu[self.menuVal] == "changeVolume":
