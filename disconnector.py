@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
 NAO_IP = "127.0.0.1"
 NAO_PORT = 9559
@@ -11,6 +11,19 @@ NAO_PORT = 9559
 tetheringSSID = "Nao-WiFi"
 tetheringPassword = "nao12345"
 wifiCountry = "IT"
+
+import logging
+
+#Configuring logging
+logger = logging.getLogger('LogScanner')
+logging.basicConfig(filename='naoDisconnector.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
+
+logging.info("Default values:")
+logging.info("NAO_IP: %s", %(NAO_IP))
+logging.info("NAO_PORT: %i" %(NAO_PORT))
+logging.info("tetheringSSID: %s", %(tetheringSSID))
+logging.info("tetheringPassword: %s" %(tetheringPassword))
+logging.info("wifiCountry: %s" %(wifiCountry))
 
 import sys
 import time
@@ -22,8 +35,10 @@ try:
 	from naoqi import ALBroker
 	from naoqi import ALModule
 	import qi
+	logging.info("NAOqi Python SDK found!")
 except:
-	print("NAOqi Python SDK not found")
+	print("NAOqi Python SDK not found, quitting...")
+	logging.error("NAOqi Python SDK not found, quitting...")
 	sys.exit(1)
 
 session = qi.Session()
@@ -32,11 +47,13 @@ pip = None
 pport = None
 memory = None
 
-menuVal = 0
 
-menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggle","changeOffsetFromFloor","changeVolume","status","close"]
 
 class CorMenuModule(ALModule):
+
+	menuVal = 0
+	menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggle","changeOffsetFromFloor","changeVolume","status","close"]
+	
 	def __init__(self, name):
 		ALModule.__init__(self, name)
 		self.changeOffset = False
@@ -59,6 +76,12 @@ class CorMenuModule(ALModule):
 			self.logger.warn("ALConnectionManager is not available, hotspot cannot be created")
 			self.connectionManager = None
 		
+		try:
+			self.postureProxy = ALProxy("ALRobotPosture")
+		except:
+			self.logger.warn("ALRobotPosture is not available")
+			self.postureProxy = None
+			
 		global memory
 		memory = ALProxy("ALMemory")
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
@@ -68,7 +91,7 @@ class CorMenuModule(ALModule):
 	
 	def disconnect(self):
 		services = session.services()
-		removed = False
+		removed = 0
 		for s in services :
 			strName = s["name"];
 			try:
@@ -77,11 +100,13 @@ class CorMenuModule(ALModule):
 				serviceID = s[1]
 			if strName in ["ALChoregraphe", "ALChoregrapheRecorder"] :
 				session.unregisterService( serviceID )
-				if not removed:
-					self.tts.say("Choregraphe connection removed successfully.")
-				removed = True
-		if not removed:
+				removed += 1
+		if removed == 2:
+			self.tts.say("Choregraphe connection removed successfully.")
+		elif removed == 0:
 			self.tts.say("Choregraphe connection not found.")
+		else:
+			self.tts.say("Error removing Choregraphe connection.")
 		
 	def onTripleChest(self, *_args):
 		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
@@ -89,6 +114,9 @@ class CorMenuModule(ALModule):
 		
 		self.language = self.tts.getLanguage()
 		self.tts.setLanguage("English")
+		
+		self.tts.say("You entered the advanced menu, hope you know what you are doing!")
+		self.tts.say("Use my head sensors to move between the options.")
 		
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
@@ -101,36 +129,61 @@ class CorMenuModule(ALModule):
 			"onRearHead")
 	
 	def onFrontOffset(self, *_args):
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
 		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 		
 		self.offset += 1
 		
+		self.tts.say("Offset: %s" %(self.offset))
+		
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontOffset")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleOffset")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onRearOffset")
 		
 	def onMiddleOffset(self, *_args):
 		memory.unsubscribeToEvent("MiddleTactilTouched",
 			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
 		
 		self.autoLife.setRobotOffsetFromFloor(self.offset)
 		self.changeOffset = False
-		self.tts.say("Offset set!")
+		self.tts.say("Offset set to %s!" %(self.offset))
 		
-		memory.subscribeToEvent("MiddleTactilTouched",
-			self.getName(),
-			"onMiddleOffset")
+		self.close()
 	
 	def onRearOffset(self, *_args):
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
 		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 		
 		if self.offset > 0:
 			self.offset -= 1
+			self.tts.say("Offset: %s" %(self.offset))
 		else:
 			self.tts.say("Cannot do it")
 			
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontOffset")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleOffset")
 		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
 			"onRearOffset")
@@ -143,17 +196,15 @@ class CorMenuModule(ALModule):
 		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 			
-		global menuVal
-		global menu
-		if menuVal >= 0 and menuVal < len(menu)-1:
-			menuVal += 1
-		elif menuVal == len(menu)-1:
-			menuVal = 1
+		if self.menuVal >= 0 and self.menuVal < len(self.menu)-1:
+			self.menuVal += 1
+		elif self.menuVal == len(self.menu)-1:
+			self.menuVal = 1
 		else:
 			self.tts.say("Unknown error.")
 			return
 		
-		self.tts.say(menu[menuVal] + " selected!")
+		self.tts.say(self.menu[self.menuVal] + " selected!")
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -174,34 +225,31 @@ class CorMenuModule(ALModule):
 		
 		flag_Return = False
 		
-		global menuVal
-		global menu
-		if menu[menuVal] == "init":
+		if self.menu[self.menuVal] == "init":
 			self.tts.say("Nothing selected! Quitting.")
-		elif menu[menuVal] == "disconnect":
+		elif self.menu[self.menuVal] == "disconnect":
 			self.disconnect()
-		elif menu[menuVal] == "activateWiFi":
+		elif self.menu[self.menuVal] == "activateWiFi":
 			self.activateWiFi()
-		elif menu[menuVal] == "deactivateWiFi":
+		elif self.menu[self.menuVal] == "deactivateWiFi":
 			self.deactivateWiFi()
-		elif menu[menuVal] == "status":
+		elif self.menu[self.menuVal] == "status":
 			self.status()
-		elif menu[menuVal] == "autonomousLifeToggle":
+		elif self.menu[self.menuVal] == "autonomousLifeToggle":
 			self.autonomousLifeToggle()
-		elif menu[menuVal] == "changeOffsetFromFloor":
+		elif self.menu[self.menuVal] == "changeOffsetFromFloor":
 			self.changeOffset = True
 			flag_Return = True
 			self.offset = self.autoLife.getRobotOffsetFromFloor()
+		elif self.menu[self.menuVal] == "changeVolume":
+			self.changeVolume()
+		elif self.menu[self.menuVal] == "close":
+			self.close()
 		else:
 			self.tts.say("Unknown error.")
 		
 		if not flag_Return:
-			self.tts.setLanguage(self.language)
-			menuVal = 0
-			
-			memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
-				self.getName(),
-				"onTripleChest")
+			self.close()
 		else:
 			memory.subscribeToEvent("FrontTactilTouched",
 				self.getName(),
@@ -221,14 +269,12 @@ class CorMenuModule(ALModule):
 		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 		
-		global menuVal
-		global menu
-		if menuVal <= 1:
-			menuVal = len(menu)-1
+		if self.menuVal <= 1:
+			self.menuVal = len(self.menu)-1
 		else :
-			menuVal = menuVal - 1
+			self.menuVal = self.menuVal - 1
 		
-		self.tts.say(menu[menuVal] + " selected!")
+		self.tts.say(self.menu[self.menuVal] + " selected!")
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -261,8 +307,6 @@ class CorMenuModule(ALModule):
 			self.tts.say("Wifi Tethering is already inactive.")
 		
 	def status(self):
-	
-		
 		global memory
 		realNotVirtual = False
 		try:
@@ -280,14 +324,14 @@ class CorMenuModule(ALModule):
 			robotName = socket.gethostname()
 			naoName = robotName
 		else:
-			naoName = "virtual-robot"
+			naoName = "virtual robot"
 		
-		self.tts.say("My name is %s" %(naoName))
+		self.tts.say("My name is %s \pau=300" %(naoName))
 		
 		batteryCharge = memory.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value")
 		batteryCurrent = memory.getData("Device/SubDeviceList/Battery/Current/Sensor/Value")
 		batteryTemp = memory.getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value")
-		self.tts.say("My battery is at %d percent with %d Ampere and the temperature is at %d percent" %(batteryCharge*100, batteryCurrent, batteryTemp))
+		self.tts.say("My battery is at %d percent \pau=300 with %d Ampere \pau=300 and the temperature is at %d percent \pau=300" %(batteryCharge*100, batteryCurrent, batteryTemp))
 		
 		autoLifeStatus = self.autoLife.getState()
 		self.tts.say("My autonomous life status is: %s" %(autoLifeStatus))
@@ -295,23 +339,122 @@ class CorMenuModule(ALModule):
 		if(self.connectionManager.getTetheringEnable("wifi")):
 			self.tts.say("WiFi is active")
 			
-			self.tts.say("WiFi SSID is %s" &(ssid))
-			self.tts.say("WiFi password is %s" &(password))
+			ssid = self.connectionManager.tetheringName()
+			password = self.connectionManager.tetheringPassphrase()
+			
+			checkSsid = ""
+			checkPassword = ""
+			
+			for char in ssid:
+				if char.isupper():
+					checkSsid += "Upper %s \pau=100 " %(char)
+				else:
+					checkSsid += "Lower %s \pau=100 " %(char)
+					
+			for char in password:
+				if char.isupper():
+					checkPassword += "Upper %s \pau=100 " %(char)
+				else:
+					checkPassword += "Lower %s \pau=100 " %(char)
+			
+			self.tts.say("WiFi SSID is %s" %(checkSsid))
+			self.tts.say("WiFi password is %s" %(checkPassword))
 		else:
 			self.tts.say("WiFi is not active")
-		pass
+		
+		previousTimeout = socket.getdefaulttimeout()
+        nTimeout = 10
+        tempReqs = "http://aldebaran.com/;http://www.google.com".split(';')
+        reqs = []
+        for tempReq in tempReqs:
+            reqs.append(tempReq.strip(" \n"))
+        socket.setdefaulttimeout(nTimeout * 1. / len(reqs))
+        bOk = False
+        for req in reqs:
+            try:
+                urllib2.urlopen(req)
+                bOk = True
+                break
+            except:
+                pass
+        if( self.bConnected == None ):
+            self.bConnected = not bOk
+        if( bOk and not self.bConnected ):
+            self.bConnected = True
+            self.tts.say("I am connected to the Internet")
+        if( not bOk and self.bConnected ):
+            self.bConnected = False
+            self.tts.say("I am not connected to the Internet")
+        socket.setdefaulttimeout(previousTimeout)
+		
+		"""
+		ipv4
+		state
+		type
+		autoconnect
+		security
+		strenght
+		error
+		"""
 		
 	def autonomousLifeToggle(self):
 		lifeState = self.autoLife.getState()
 		if lifeState == "solitary" or lifeState == "interactive":
 			self.autoLife.setState("disabled")
 		elif lifeState == "safeguard":
-			pass # Stand Up from Choregraphe
+			self.postureProxy.setMaxTryNumber(3)
+			result = self.postureProxy.goToPosture("Stand", 80)
+			
+			if(result):
+				logging.info("Stand reached")
+			else:
+				logging.error("Failed to stand up")
+				self.tts.say("I surrender.")
 		else:
 			self.autoLife.setState("solitary")
 		
-	def unload(self):
+	def close(self):
 		self.tts.setLanguage(self.language)
+		self.menuVal = 0
+		
+		for sub in getSubscribers("MiddleTactilTouched")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("MiddleTactilTouched",
+				self.getName())
+		for sub in getSubscribers("FrontTactilTouched")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("FrontTactilTouched",
+				self.getName())
+		for sub in getSubscribers("RearTactilTouched")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("RearTactilTouched",
+				self.getName())
+			
+		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
+			self.getName(),
+			"onTripleChest")
+	
+	def unload(self):
+		self.postureProxy.stopMove()
+		self.tts.setLanguage(self.language)
+		
+		for sub in getSubscribers("MiddleTactilTouched")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("MiddleTactilTouched",
+				self.getName())
+		for sub in getSubscribers("FrontTactilTouched")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("FrontTactilTouched",
+				self.getName())
+		for sub in getSubscribers("RearTactilTouched")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("RearTactilTouched",
+				self.getName())
+		for sub in getSubscribers("ALChestButton/TripleClickOccurred")
+			if sub == self.getName():
+				memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
+				self.getName())
+			
 def main():
 	parser = OptionParser()
 	parser.add_option("--pip",
@@ -329,6 +472,10 @@ def main():
 	pip   = opts.pip
 	pport = opts.pport
 	
+	logging.info("Parsed values:")
+	logging.info("NAO_IP: %s" %(NAO_IP))
+	logging.info("NAO_PORT: %i" %(NAO_PORT))
+	
 	session.connect("tcp://" + str(pip) + ":" + str(pport))
 	myBroker = ALBroker("myBroker",
 	   "0.0.0.0",
@@ -343,10 +490,16 @@ def main():
 		while True:
 			time.sleep(1)
 	except KeyboardInterrupt:
-		print "Interrupted by user, shutting down"
+		print "Interrupted by user, shutting down..."
+		logging.info("Interrupted by user, shutting down...")
 		CorMenu.unload()
 		myBroker.shutdown()
 		sys.exit(0)
+	except Exception as exception:
+		logging.error(exception.strerror)
+		CorMenu.unload()
+		myBroker.shutdown()
+		sys.exit(1)
 
 if __name__ == "__main__":
 	main()
