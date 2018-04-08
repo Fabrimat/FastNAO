@@ -5,12 +5,23 @@ __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
 __version__ = '0.8.6'
 
-NAO_IP = "127.0.0.1"
-NAO_PORT = 9559
+import config
+try:
+	lang = __import__("%s-lang" %(config.language))
+except ImportError:
+	if config.language is not "EN":
+		try:
+			lang = __import__("EN-lang")
+		except ImportError:
+			print("Lang file not found.")
+			logging.error("Lang file not found.")
+			sys.exit(1)
+	else:
+		print("Lang file not found.")
+		logging.error("Lang file not found.")
+		sys.exit(1)
+	
 
-tetheringSSID = "Nao-WiFi"
-tetheringPassword = "nao12345"
-wifiCountry = "IT"
 
 import logging
 
@@ -27,6 +38,7 @@ logging.info("wifiCountry: %s" %(wifiCountry))
 
 import sys
 import time
+import subprocess
 
 from optparse import OptionParser
 
@@ -42,20 +54,21 @@ except:
 	sys.exit(1)
 
 session = qi.Session()
-CorMenu = None
-pip = None
-pport = None
 memory = None
-
-
 
 class CorMenuModule(ALModule):
 
 	menuVal = 0
-	menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggle","changeOffsetFromFloor","changeVolume","status","close"]
+	menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggle","changeOffsetFromFloor","changeVolume","status","fastReboot","close"]
 	
 	def __init__(self, name):
 		ALModule.__init__(self, name)
+		
+		try:
+			self.motion = ALProxy("ALMotion")
+		except:
+			self.logger.warn("ALMotion is not available")
+			self.motion = None
 		
 		try:
 			self.autoLife = ALProxy("ALAutonomousLife")
@@ -70,9 +83,15 @@ class CorMenuModule(ALModule):
 			self.tts = None
 			
 		try:
+			self.sys = ALProxy("ALSystemProxy")
+		except:
+			self.logger.warn("ALSystemProxy is not available")
+			self.sys = None
+			
+		try:
 			self.connectionManager = ALProxy("ALConnectionManager", NAO_IP, NAO_PORT)
 		except:
-			self.logger.warn("ALConnectionManager is not available, hotspot cannot be created")
+			self.logger.warn("ALConnectionManager is not available")
 			self.connectionManager = None
 		
 		try:
@@ -205,9 +224,8 @@ class CorMenuModule(ALModule):
 			self.menuVal = 1
 		else:
 			self.tts.say("Unknown error.")
-			return
 		
-		self.tts.say(self.menu[self.menuVal] + " selected!")
+		self.tts.say("%s selected!" %(self.menu[self.menuVal]))
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -243,16 +261,6 @@ class CorMenuModule(ALModule):
 		elif self.menu[self.menuVal] == "changeOffsetFromFloor":
 			flag_Return = True
 			self.offset = self.autoLife.getRobotOffsetFromFloor()
-		elif self.menu[self.menuVal] == "changeVolume":
-			self.changeVolume()
-		elif self.menu[self.menuVal] == "close":
-			self.close()
-		else:
-			self.tts.say("Unknown error.")
-		
-		if not flag_Return:
-			self.close()
-		else:
 			memory.subscribeToEvent("FrontTactilTouched",
 				self.getName(),
 				"onFrontOffset")
@@ -262,6 +270,16 @@ class CorMenuModule(ALModule):
 			memory.subscribeToEvent("RearTactilTouched",
 				self.getName(),
 				"onRearOffset")
+		elif self.menu[self.menuVal] == "changeVolume":
+			self.changeVolume()
+		elif self.menu[self.menuVal] == "close":
+			self.close()
+		else:
+			self.tts.say("Unknown error.")
+		
+		if not flag_Return:
+			self.close()
+			
 		
 	def onRearHead(self, *_args):
 		memory.unsubscribeToEvent("MiddleTactilTouched",
@@ -276,7 +294,7 @@ class CorMenuModule(ALModule):
 		else :
 			self.menuVal = self.menuVal - 1
 		
-		self.tts.say(self.menu[self.menuVal] + " selected!")
+		self.tts.say("%s selected!" %(self.menu[self.menuVal]))
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -331,15 +349,13 @@ class CorMenuModule(ALModule):
 		self.tts.say("My name is %s \pau=300" %(naoName))
 		
 		batteryCharge = memory.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value")
-		batteryCurrent = memory.getData("Device/SubDeviceList/Battery/Current/Sensor/Value")
-		batteryTemp = memory.getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value")
-		self.tts.say("My battery is at %d percent \pau=300 with %d Ampere \pau=300 and the temperature is at %d percent \pau=300" %(batteryCharge*100, batteryCurrent, batteryTemp))
+		self.tts.say("My battery is at %d percent \pau=300" %(batteryCharge*100))
 		
 		autoLifeStatus = self.autoLife.getState()
 		self.tts.say("My autonomous life status is: %s" %(autoLifeStatus))
 		
 		if(self.connectionManager.getTetheringEnable("wifi")):
-			self.tts.say("WiFi is active")
+			self.tts.say("WiFi Tethering is active")
 			
 			ssid = self.connectionManager.tetheringName()
 			password = self.connectionManager.tetheringPassphrase()
@@ -359,36 +375,16 @@ class CorMenuModule(ALModule):
 				else:
 					checkPassword += "Lower %s \pau=100 " %(char)
 			
-			self.tts.say("WiFi SSID is %s" %(checkSsid))
-			self.tts.say("WiFi password is %s" %(checkPassword))
+			self.tts.say("WiFi Tethering SSID is %s" %(checkSsid))
+			self.tts.say("WiFi Tethering password is %s" %(checkPassword))
 		else:
-			self.tts.say("WiFi is not active")
+			self.tts.say("WiFi Tethering is not active")
 		
-		previousTimeout = socket.getdefaulttimeout()
-		self.bConnected = None
-		nTimeout = 10
-		tempReqs = "http://aldebaran.com/;http://www.google.com".split(';')
-		reqs = []
-		for tempReq in tempReqs:
-			reqs.append(tempReq.strip(" \n"))
-		socket.setdefaulttimeout(nTimeout * 1. / len(reqs))
-		bOk = False
-		for req in reqs:
-			try:
-				urllib2.urlopen(req)
-				bOk = True
-				break
-			except:
-				pass
-		if( self.bConnected == None ):
-			self.bConnected = not bOk
-		if( bOk and not self.bConnected ):
-			self.bConnected = True
+		try:
+			urllib.urlopen('http://www.google.com', timeout=1)
 			self.tts.say("I am connected to the Internet")
-		if( not bOk and self.bConnected ):
-			self.bConnected = False
+		except urllib.URLError: 
 			self.tts.say("I am not connected to the Internet")
-		socket.setdefaulttimeout(previousTimeout)
 		
 		"""
 		ipv4
@@ -415,6 +411,11 @@ class CorMenuModule(ALModule):
 				self.tts.say("I surrender.")
 		else:
 			self.autoLife.setState("solitary")
+		
+	def fastReboot(self):
+		self.motion.rest()
+		self.tts.say("Rebooting!")
+		proc = subprocess.Popen(["nao restart"], stdout=subprocess.PIPE)
 		
 	def close(self):
 		global memory
