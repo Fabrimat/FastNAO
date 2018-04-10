@@ -3,38 +3,51 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.6'
+__version__ = '0.8.7'
 
-import config
+try:
+	import config
+	if config.Config_Version != __version__:
+		print("Configuration file not valid. Please update it.")
+		logging.error("Configuration file not valid. Please update it.")
+		sys.exit(1)
+except ImportError:
+	print("Configuration file not found.")
+	logging.error("Configuration file not found.")
+
+import logging
+#Configuring logging
+logger = logging.getLogger('LogScanner')
+logging.basicConfig(filename=Log_File_Name,format=Log_Format,level=logging.ERROR)
+
 try:
 	lang = __import__("%s-lang" %(config.language))
+	if config.Config_Version != __version__:
+		print("Language file not valid. Please update it.")
+		logging.error("Language file not valid. Please update it.")
+		sys.exit(1)
 except ImportError:
 	if config.language is not "EN":
 		try:
 			lang = __import__("EN-lang")
 		except ImportError:
-			print("Lang file not found.")
-			logging.error("Lang file not found.")
+			print("Language file not found.")
+			logging.error("Language file not found.")
 			sys.exit(1)
 	else:
-		print("Lang file not found.")
-		logging.error("Lang file not found.")
+		print("Language file not found.")
+		logging.error("Language file not found.")
 		sys.exit(1)
 	
 
 
-import logging
-
-#Configuring logging
-logger = logging.getLogger('LogScanner')
-logging.basicConfig(filename='naoDisconnector.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
-
-logging.info("Default values:")
-logging.info("NAO_IP: %s" %(NAO_IP))
-logging.info("NAO_PORT: %i" %(NAO_PORT))
-logging.info("tetheringSSID: %s" %(tetheringSSID))
-logging.info("tetheringPassword: %s" %(tetheringPassword))
-logging.info("wifiCountry: %s" %(wifiCountry))
+	
+logging.info("Config:")
+logging.info("NAO_IP: %s" %(config.Nao_IP))
+logging.info("NAO_PORT: %i" %(config.Nao_Port))
+logging.info("tetheringSSID: %s" %(config.Tethering_SSID))
+logging.info("tetheringPassword: %s" %(config.Tethering_Password))
+logging.info("wifiCountry: %s" %(config.Wifi_Country))
 
 import sys
 import time
@@ -47,7 +60,6 @@ try:
 	from naoqi import ALBroker
 	from naoqi import ALModule
 	import qi
-	logging.info("NAOqi Python SDK found!")
 except:
 	print("NAOqi Python SDK not found, quitting...")
 	logging.error("NAOqi Python SDK not found, quitting...")
@@ -60,6 +72,7 @@ class CorMenuModule(ALModule):
 
 	menuVal = 0
 	menu = ["init","disconnect","activateWiFi","deactivateWiFi","autonomousLifeToggle","changeOffsetFromFloor","changeVolume","status","fastReboot","close"]
+	menuLang = ["", lang.Disconnect, lang.WiFiOn, lang.WiFiOff, lang.AutoLifeToggle, lang.ChangeOffsetFloor, lang.ChangeVolume, lang.Status, lang.FastReboot, lang.Close]
 	
 	def __init__(self, name):
 		ALModule.__init__(self, name)
@@ -106,7 +119,6 @@ class CorMenuModule(ALModule):
 			self.getName(),
 			"onTripleChest")
 	
-	
 	def disconnect(self):
 		services = session.services()
 		removed = 0
@@ -120,11 +132,11 @@ class CorMenuModule(ALModule):
 				session.unregisterService( serviceID )
 				removed += 1
 		if removed == 2:
-			self.tts.say("Choregraphe connection removed successfully.")
+			self.tts.say(lang.ChorDiscSucc)
 		elif removed == 0:
-			self.tts.say("Choregraphe connection not found.")
+			self.tts.say(lang.ChorDiscFail)
 		else:
-			self.tts.say("Error removing Choregraphe connection.")
+			self.tts.say(lang.ChorDiscError)
 		
 	def onTripleChest(self, *_args):
 		global memory
@@ -132,10 +144,10 @@ class CorMenuModule(ALModule):
 			self.getName())
 		
 		self.language = self.tts.getLanguage()
-		self.tts.setLanguage("English")
+		self.tts.setLanguage(lang.LanguageName)
 		
-		self.tts.say("You entered the advanced menu, hope you know what you are doing!")
-		self.tts.say("Use my head sensors to move between the options.")
+		self.tts.say(lang.Welcome1)
+		self.tts.say(lang.Welcome2)
 		
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
@@ -158,7 +170,7 @@ class CorMenuModule(ALModule):
 		
 		self.offset += 1
 		
-		self.tts.say("Offset: %s" %(self.offset))
+		self.tts.say(lang.OffsetChange %(self.offset))
 		
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
@@ -180,7 +192,7 @@ class CorMenuModule(ALModule):
 			self.getName())
 		
 		self.autoLife.setRobotOffsetFromFloor(self.offset)
-		self.tts.say("Offset set to %s!" %(self.offset))
+		self.tts.say(lang.OffsetSet %(self.offset))
 		
 		self.close()
 	
@@ -195,9 +207,9 @@ class CorMenuModule(ALModule):
 		
 		if self.offset > 0:
 			self.offset -= 1
-			self.tts.say("Offset: %s" %(self.offset))
+			self.tts.say(lang.OffsetChange %(self.offset))
 		else:
-			self.tts.say("Cannot do it")
+			self.tts.say(lang.OffsetChangeFail)
 			
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
@@ -223,9 +235,9 @@ class CorMenuModule(ALModule):
 		elif self.menuVal == len(self.menu)-1:
 			self.menuVal = 1
 		else:
-			self.tts.say("Unknown error.")
+			self.tts.say(lang.UnknownError)
 		
-		self.tts.say("%s selected!" %(self.menu[self.menuVal]))
+		self.tts.say(lang.MainMenuChange %(self.menuLang[self.menuVal]))
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -247,7 +259,7 @@ class CorMenuModule(ALModule):
 		flag_Return = False
 		
 		if self.menu[self.menuVal] == "init":
-			self.tts.say("Nothing selected! Quitting.")
+			self.tts.say(lang.NothingSelected)
 		elif self.menu[self.menuVal] == "disconnect":
 			self.disconnect()
 		elif self.menu[self.menuVal] == "activateWiFi":
@@ -272,10 +284,12 @@ class CorMenuModule(ALModule):
 				"onRearOffset")
 		elif self.menu[self.menuVal] == "changeVolume":
 			self.changeVolume()
+		elif self.menu[self.menuVal] == "fastReboot":
+			self.fastReboot()
 		elif self.menu[self.menuVal] == "close":
 			self.close()
 		else:
-			self.tts.say("Unknown error.")
+			self.tts.say(lang.UnknownError)
 		
 		if not flag_Return:
 			self.close()
@@ -294,7 +308,7 @@ class CorMenuModule(ALModule):
 		else :
 			self.menuVal = self.menuVal - 1
 		
-		self.tts.say("%s selected!" %(self.menu[self.menuVal]))
+		self.tts.say(lang.MainMenuChange %(self.menuLang[self.menuVal]))
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -307,24 +321,24 @@ class CorMenuModule(ALModule):
 			
 	def activateWiFi(self):
 		if self.connectionManager is None:
-			self.tts.say("Error, ALConnectionManager is no longer avaiable")
+			self.tts.say(lang.WiFiError)
 			return
 		if not self.connectionManager.getTetheringEnable("wifi"):
 			self.connectionManager.setCountry(wifiCountry)
 			self.connectionManager.enableTethering("wifi", tetheringSSID, tetheringPassword)
-			self.tts.say("Wifi Tethering activated.")
+			self.tts.say(lang.WifiActivated)
 		else:
-			self.tts.say("Wifi Tethering is already active.")
+			self.tts.say(lang.WifiAlreadyActive)
 			
 	def deactivateWiFi(self):
 		if self.connectionManager is None:
-			self.tts.say("Error, ALConnectionManager is no longer avaiable")
+			self.tts.say(lang.WiFiError)
 			return
 		if self.connectionManager.getTetheringEnable("wifi"):
 			self.connectionManager.disableTethering("wifi")
-			self.tts.say("Wifi Tethering deactivated.")
+			self.tts.say(lang.WifiDeactivated)
 		else:
-			self.tts.say("Wifi Tethering is already inactive.")
+			self.tts.say(lang.WifiAlreadyInactive)
 		
 	def status(self):
 		global memory
@@ -344,47 +358,60 @@ class CorMenuModule(ALModule):
 			robotName = socket.gethostname()
 			naoName = robotName
 		else:
-			naoName = "virtual robot"
+			naoName = lang.VirtualRobotName
 		
-		self.tts.say("My name is %s \pau=300" %(naoName))
+		self.tts.say(lang.Name %(naoName))
 		
 		batteryCharge = memory.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value")
-		self.tts.say("My battery is at %d percent \pau=300" %(batteryCharge*100))
+		self.tts.say(lang.Battery %(batteryCharge*100))
 		
 		autoLifeStatus = self.autoLife.getState()
-		self.tts.say("My autonomous life status is: %s" %(autoLifeStatus))
+		if autoLifeStatus == "solitary":
+			autoLifeStatus = lang.AutoSolitary
+		elif autoLifeStatus == "interactive":
+			autoLifeStatus = lang.AutoInteractive
+		elif autoLifeStatus == "disabled":
+			autoLifeStatus = lang.AutoDisabled
+		elif autoLifeStatus == "safeguard":
+			autoLifeStatus = lang.AutoSafeGuard
+		self.tts.say(lang.Autonomous %(autoLifeStatus))
 		
 		if(self.connectionManager.getTetheringEnable("wifi")):
-			self.tts.say("WiFi Tethering is active")
+			self.tts.say(lang.WifiActive)
 			
-			ssid = self.connectionManager.tetheringName()
-			password = self.connectionManager.tetheringPassphrase()
-			
-			checkSsid = ""
-			checkPassword = ""
-			
-			for char in ssid:
-				if char.isupper():
-					checkSsid += "Upper %s \pau=100 " %(char)
+			if Say_SSID:
+				ssid = self.connectionManager.tetheringName()
+				checkSsid = ""
+				if Spell_SSID:
+					for char in ssid:
+						if char.isupper():
+							checkSsid += lang.UpperLetter %(char)
+						else:
+							checkSsid += lang.LowerLetter %(char)
 				else:
-					checkSsid += "Lower %s \pau=100 " %(char)
-					
-			for char in password:
-				if char.isupper():
-					checkPassword += "Upper %s \pau=100 " %(char)
-				else:
-					checkPassword += "Lower %s \pau=100 " %(char)
+					checkSsid = ssid
+				self.tts.say(lang.WifiSSID %(checkSsid))
 			
-			self.tts.say("WiFi Tethering SSID is %s" %(checkSsid))
-			self.tts.say("WiFi Tethering password is %s" %(checkPassword))
+			if Say_Passowrd
+				password = self.connectionManager.tetheringPassphrase()
+				checkPassword = ""
+				if Spell_Password:
+					for char in password:
+						if char.isupper():
+							checkPassword += lang.UpperLetter %(char)
+						else:
+							checkPassword += lang.LowerLetter %(char)
+				else:
+					checkPassword = password
+				self.tts.say(lang.WifiPassword %(checkPassword))
 		else:
-			self.tts.say("WiFi Tethering is not active")
+			self.tts.say(lang.WifiInactive)
 		
 		try:
 			urllib.urlopen('http://www.google.com', timeout=1)
-			self.tts.say("I am connected to the Internet")
+			self.tts.say(lang.InternetOn)
 		except urllib.URLError: 
-			self.tts.say("I am not connected to the Internet")
+			self.tts.say(lang.InternetOff)
 		
 		"""
 		ipv4
@@ -408,13 +435,13 @@ class CorMenuModule(ALModule):
 				logging.info("Stand reached")
 			else:
 				logging.error("Failed to stand up")
-				self.tts.say("I surrender.")
+				self.tts.say(lang.Surrdender)
 		else:
 			self.autoLife.setState("solitary")
 		
 	def fastReboot(self):
 		self.motion.rest()
-		self.tts.say("Rebooting!")
+		self.tts.say(lang.Reboot)
 		proc = subprocess.Popen(["nao restart"], stdout=subprocess.PIPE)
 		
 	def close(self):
@@ -470,16 +497,12 @@ def main():
 		dest="pport",
 		type="int")
 	parser.set_defaults(
-		pip=NAO_IP,
-		pport=NAO_PORT)
+		pip=config.Nao_IP,
+		pport=config.Nao_Port)
 
 	(opts, args_) = parser.parse_args()
 	pip   = opts.pip
 	pport = opts.pport
-	
-	logging.info("Parsed values:")
-	logging.info("NAO_IP: %s" %(NAO_IP))
-	logging.info("NAO_PORT: %i" %(NAO_PORT))
 	
 	session.connect("tcp://" + str(pip) + ":" + str(pport))
 	myBroker = ALBroker("myBroker",
