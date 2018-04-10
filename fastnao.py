@@ -5,9 +5,11 @@ __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
 __version__ = '0.8.7'
 
+confVer = 0.2
+
 try:
 	import config
-	if config.Config_Version != __version__:
+	if config.Config_Version != confVer:
 		print("Configuration file not valid. Please update it.")
 		logging.error("Configuration file not valid. Please update it.")
 		sys.exit(1)
@@ -22,7 +24,7 @@ logging.basicConfig(filename=Log_File_Name,format=Log_Format,level=logging.ERROR
 
 try:
 	lang = __import__("%s-lang" %(config.language))
-	if config.Config_Version != __version__:
+	if config.Config_Version != confVer:
 		print("Language file not valid. Please update it.")
 		logging.error("Language file not valid. Please update it.")
 		sys.exit(1)
