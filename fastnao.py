@@ -387,10 +387,18 @@ class CorMenuModule(ALModule):
 				checkSsid = ""
 				if Spell_SSID:
 					for char in ssid:
-						if char.isupper():
-							checkSsid += lang.UpperLetter %(char)
+						try:
+							int(char)
+							integer = True
+						except:
+							integer = False
+						if integer:
+							checkSsid += " %s " %(char)
 						else:
-							checkSsid += lang.LowerLetter %(char)
+							if char.isupper():
+								checkSsid += lang.UpperLetter %(char)
+							else:
+								checkSsid += lang.LowerLetter %(char)
 				else:
 					checkSsid = ssid
 				self.tts.say(lang.WifiSSID %(checkSsid))
@@ -400,10 +408,18 @@ class CorMenuModule(ALModule):
 				checkPassword = ""
 				if Spell_Password:
 					for char in password:
-						if char.isupper():
-							checkPassword += lang.UpperLetter %(char)
+						try:
+							int(char)
+							integer = True
+						except:
+							integer = False
+						if integer:
+							checkSsid += " %s " %(char)
 						else:
-							checkPassword += lang.LowerLetter %(char)
+							if char.isupper():
+								checkPassword += lang.UpperLetter %(char)
+							else:
+								checkPassword += lang.LowerLetter %(char)
 				else:
 					checkPassword = password
 				self.tts.say(lang.WifiPassword %(checkPassword))
