@@ -5,7 +5,7 @@
 # | | | (_| \__ \ |_| |\  |/ ____ \ |__| |
 # |_|  \__,_|___/\__|_| \_/_/    \_\____/   
 
-# The language file you will be using
+# The language file you will use
 # IT stands for IT-lang.py
 Language = "IT"
 
