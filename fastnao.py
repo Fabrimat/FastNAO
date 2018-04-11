@@ -105,7 +105,7 @@ class CorMenuModule(ALModule):
 			self.sys = None
 			
 		try:
-			self.connectionManager = ALProxy("ALConnectionManager", NAO_IP, NAO_PORT)
+			self.connectionManager = ALProxy("ALConnectionManager", config.Nao_IP, config.Nao_Port)
 		except:
 			self.logger.warn("ALConnectionManager is not available")
 			self.connectionManager = None
