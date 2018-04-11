@@ -7,6 +7,11 @@ __version__ = '0.8.7'
 
 confVer = 0.2
 
+import logging
+#Configuring logging
+logger = logging.getLogger('LogScanner')
+logging.basicConfig(filename=Log_File_Name,format=Log_Format,level=logging.ERROR)
+
 try:
 	import config
 	if config.Config_Version != confVer:
@@ -16,11 +21,6 @@ try:
 except ImportError:
 	print("Configuration file not found.")
 	logging.error("Configuration file not found.")
-
-import logging
-#Configuring logging
-logger = logging.getLogger('LogScanner')
-logging.basicConfig(filename=Log_File_Name,format=Log_Format,level=logging.ERROR)
 
 try:
 	lang = __import__("%s-lang" %(config.language))
