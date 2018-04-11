@@ -24,6 +24,10 @@ logging.basicConfig(filename=Log_File_Name,format=Log_Format,level=logging.ERROR
 
 try:
 	lang = __import__("%s-lang" %(config.language))
+	if lang.LanguageName not in tts.getSupportedLanguages():
+		print("Language not installed on Nao, please install it.")
+		logging.error("Language not installed on Nao, please install it.")
+		sys.exit(1)
 	if config.Config_Version != confVer:
 		print("Language file not valid. Please update it.")
 		logging.error("Language file not valid. Please update it.")
@@ -40,10 +44,7 @@ except ImportError:
 		print("Language file not found.")
 		logging.error("Language file not found.")
 		sys.exit(1)
-	
 
-
-	
 logging.info("Config:")
 logging.info("NAO_IP: %s" %(config.Nao_IP))
 logging.info("NAO_PORT: %i" %(config.Nao_Port))
@@ -424,6 +425,9 @@ class CorMenuModule(ALModule):
 		strenght
 		error
 		"""
+		
+	def changeVolume(self):
+		self.tts.say("Not supported yet")
 		
 	def autonomousLifeToggle(self):
 		lifeState = self.autoLife.getState()
