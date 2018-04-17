@@ -7,30 +7,19 @@ __version__ = '0.8.7'
 
 confVer = 0.2
 
-import logging
-#Configuring logging
-logger = logging.getLogger('LogScanner')
-logging.basicConfig(filename=Log_File_Name,format=Log_Format,level=logging.ERROR)
 
 try:
 	import config
 	if config.Config_Version != confVer:
 		print("Configuration file not valid. Please update it.")
-		logging.error("Configuration file not valid. Please update it.")
 		sys.exit(1)
 except ImportError:
 	print("Configuration file not found.")
-	logging.error("Configuration file not found.")
 
 try:
-	lang = __import__("%s-lang" %(config.language))
-	if lang.LanguageName not in tts.getSupportedLanguages():
-		print("Language not installed on Nao, please install it.")
-		logging.error("Language not installed on Nao, please install it.")
-		sys.exit(1)
+	lang = __import__("%s-lang" %(config.Language))
 	if config.Config_Version != confVer:
 		print("Language file not valid. Please update it.")
-		logging.error("Language file not valid. Please update it.")
 		sys.exit(1)
 except ImportError:
 	if config.language is not "EN":
@@ -38,23 +27,15 @@ except ImportError:
 			lang = __import__("EN-lang")
 		except ImportError:
 			print("Language file not found.")
-			logging.error("Language file not found.")
 			sys.exit(1)
 	else:
 		print("Language file not found.")
-		logging.error("Language file not found.")
 		sys.exit(1)
-
-logging.info("Config:")
-logging.info("NAO_IP: %s" %(config.Nao_IP))
-logging.info("NAO_PORT: %i" %(config.Nao_Port))
-logging.info("tetheringSSID: %s" %(config.Tethering_SSID))
-logging.info("tetheringPassword: %s" %(config.Tethering_Password))
-logging.info("wifiCountry: %s" %(config.Wifi_Country))
 
 import sys
 import time
 import subprocess
+import urllib
 
 from optparse import OptionParser
 
@@ -65,7 +46,6 @@ try:
 	import qi
 except:
 	print("NAOqi Python SDK not found, quitting...")
-	logging.error("NAOqi Python SDK not found, quitting...")
 	sys.exit(1)
 
 session = qi.Session()
@@ -99,9 +79,9 @@ class CorMenuModule(ALModule):
 			self.tts = None
 			
 		try:
-			self.sys = ALProxy("ALSystemProxy")
+			self.sys = ALProxy("ALSystem")
 		except:
-			self.logger.warn("ALSystemProxy is not available")
+			self.logger.warn("ALSystem is not available")
 			self.sys = None
 			
 		try:
@@ -116,11 +96,21 @@ class CorMenuModule(ALModule):
 			self.logger.warn("ALRobotPosture is not available")
 			self.postureProxy = None
 			
+		try:
+			self.audio = ALProxy("ALAudioPlayer")
+		except:
+			self.logger.warn("ALAudioPlayer is not avaiable")
+			self.audio = None
+			
 		global memory
 		memory = ALProxy("ALMemory")
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName(),
 			"onTripleChest")
+			
+		if lang.LanguageName not in self.tts.getAvailableLanguages():
+			print("Language not installed on Nao, please install it.")
+			sys.exit(1)
 	
 	def disconnect(self):
 		services = session.services()
@@ -149,8 +139,11 @@ class CorMenuModule(ALModule):
 		self.language = self.tts.getLanguage()
 		self.tts.setLanguage(lang.LanguageName)
 		
-		self.tts.say(lang.Welcome1)
-		self.tts.say(lang.Welcome2)
+		
+		self.audio.playFile("/usr/share/naoqi/wav/bip_gentle.wav")
+		if config.Intro:
+			self.tts.say(lang.Welcome1)
+			self.tts.say(lang.Welcome2)
 		
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
@@ -262,6 +255,7 @@ class CorMenuModule(ALModule):
 		flag_Return = False
 		
 		if self.menu[self.menuVal] == "init":
+			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
 		elif self.menu[self.menuVal] == "disconnect":
 			self.disconnect()
@@ -429,7 +423,7 @@ class CorMenuModule(ALModule):
 		try:
 			urllib.urlopen('http://www.google.com', timeout=1)
 			self.tts.say(lang.InternetOn)
-		except urllib.URLError: 
+		except: 
 			self.tts.say(lang.InternetOff)
 		
 		"""
@@ -453,10 +447,7 @@ class CorMenuModule(ALModule):
 			self.postureProxy.setMaxTryNumber(3)
 			result = self.postureProxy.goToPosture("Stand", 80)
 			
-			if(result):
-				logging.info("Stand reached")
-			else:
-				logging.error("Failed to stand up")
+			if not result:
 				self.tts.say(lang.Surrdender)
 		else:
 			self.autoLife.setState("solitary")
@@ -541,14 +532,13 @@ def main():
 			time.sleep(1)
 	except KeyboardInterrupt:
 		print "Interrupted by user, shutting down..."
-		logging.info("Interrupted by user, shutting down...")
 		CorMenu.unload()
 		myBroker.shutdown()
 		sys.exit(0)
 	except Exception as exception:
-		logging.error(exception.strerror)
 		CorMenu.unload()
 		myBroker.shutdown()
+		print (exception)
 		sys.exit(1)
 
 if __name__ == "__main__":
