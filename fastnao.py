@@ -403,7 +403,7 @@ class CorMenuModule(ALModule):
 					checkSsid = ssid
 				self.tts.say(lang.WifiSSID %(checkSsid))
 			
-			if Say_Passowrd
+			if Say_Passowrd:
 				password = self.connectionManager.tetheringPassphrase()
 				checkPassword = ""
 				if Spell_Password:
