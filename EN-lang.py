@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*-
 #  ______        _   _   _          ____  
 # |  ____|      | | | \ | |   /\   / __ \ 
 # | |__ __ _ ___| |_|  \| |  /  \ | |  | |
@@ -42,16 +43,16 @@ WifiAlreadyInactive = "Wifi Tethering is already inactive."
 
 VirtualRobotName = "Virtual Robot"
 
-Name = "My name is %s \pau=300"
-Battery = "My battery is at %d percent \pau=300"
+Name = "My name is %s \pau=300\ "
+Battery = "My battery is at %d percent \pau=300\ "
 Autonomous = "My autonomous life status is: %s"
 AutoSolitary = "Solitary"
 AutoInteractive = "Interactive"
 AutoDisabled = "Disabled"
 AutoSafeGuard = "SafeGuard"
 WifiActive = "WiFi Tethering is active"
-UpperLetter = "Upper %s \pau=100"
-LowerLetter = "Lower %s \pau=100"
+UpperLetter = "Upper %s \pau=100\ "
+LowerLetter = "Lower %s \pau=100\ "
 WifiSSID = "WiFi Tethering SSID is %s"
 WifiPassword = "WiFi Tethering password is %s"
 WifiInactive = "WiFi Tethering is not active"
