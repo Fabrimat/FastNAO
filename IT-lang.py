@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*-
 #  ______        _   _   _          ____  
 # |  ____|      | | | \ | |   /\   / __ \ 
 # | |__ __ _ ___| |_|  \| |  /  \ | |  | |
@@ -5,7 +6,7 @@
 # | | | (_| \__ \ |_| |\  |/ ____ \ |__| |
 # |_|  \__,_|___/\__|_| \_/_/    \_\____/  
 
-LanguageName = "Italiano"
+LanguageName = "Italian"
 
 ChorDiscSucc = "Connessione a Choregraphe rimossa con successo."
 ChorDiscFail = "Connessione a Choregraphe non trovata."
@@ -42,16 +43,16 @@ WifiAlreadyInactive = "Il Tethering WiFi è già disattivato."
 
 VirtualRobotName = "Robot Virtuale"
 
-Name = "Il mio nome è %s \pau=300"
-Battery = "La mia batteria è al %d percento \pau=300"
+Name = "Il mio nome è %s \pau=300\ "
+Battery = "La mia batteria è al %d percento \pau=300\ "
 Autonomous = "Lo stato della mia vita autonoma è: %s."
 AutoSolitary = "Solitaria"
 AutoInteractive = "Interattiva"
 AutoDisabled = "Disattivata"
 AutoSafeGuard = "Protezione"
 WifiActive = "Il Tethering WiFi è attivo."
-UpperLetter = "%s maiuscola \pau=100"
-LowerLetter = "%s minuscola \pau=100"
+UpperLetter = "%s maiuscola \pau=100\ "
+LowerLetter = "%s minuscola \pau=100\ "
 WifiSSID = "L' S S I D del Tethering WiFi è %s"
 WifiPassword = "La password del Tethering WiFi è %s"
 WifiInactive = "Il Tethering WiFi non è attivo."
