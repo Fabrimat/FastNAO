@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*-
 #  ______        _   _   _          ____  
 # |  ____|      | | | \ | |   /\   / __ \ 
 # | |__ __ _ ___| |_|  \| |  /  \ | |  | |
@@ -30,13 +31,8 @@ Say_Passowrd = False
 # Spell Password or not
 Spell_Password = False
 
-# The name of the log file
-Log_File_Name = "FastNAO.log"
-# The format of every line of log
-Log_Format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-
 # Say the message when pressing three times on the chest button
-Intro = True
+Intro = False
 
 # Do not change!
 Config_Version = 0.2
