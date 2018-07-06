@@ -5,7 +5,7 @@ FastNAO is a software that can be installed on your Nao and lets you take the co
 
 FastNAO has been tested on Nao H25 and is licensed under the Apache License 2.0.
 
-## Italiano
+### Italiano
 FastNao è un programma che può essere installato sul Nao e permette di prenderne il controllo senza il bisogno di altri dispositivi, può essere molto utile quando non ci si riesce a connettere al robot e si vuole abilitare il Tethering WiFi oppure quando si vuole disconnettere Choregraphe senza il bisogno di effettuare un riavvio.
 
 FastNAO è stato testato su un Nao H25 sotto licenza Apache 2.0.
