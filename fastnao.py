@@ -341,10 +341,17 @@ class CorMenuModule(ALModule):
 		
 		flag_Return = False
 		
-		for value in self.touch.getStatus():
-			if value[0] == "MiddleTactilTouched":
-				while value[1]:
-					time.sleep(0.001)
+		flag_Break = False
+		while True:
+			status = self.touch.getStatus()
+			for value in status:
+				if value[0] == "MiddleTactilTouched":
+					if value[1]:
+						time.sleep(0.001)
+					else:
+						flag_Break = True
+			if flag_Break:
+				break
 		
 		if self.menu[self.menuVal] == "init":
 			#
