@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.9'
+__version__ = '0.8.9.1'
 
 confVer = 0.2
 
