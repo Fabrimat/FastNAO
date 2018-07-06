@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.8.7'
+__version__ = '0.8.9'
 
 confVer = 0.2
 
@@ -85,6 +85,12 @@ class CorMenuModule(ALModule):
 			self.sys = None
 			
 		try:
+			self.touch = ALProxy("ALTouch")
+		except:
+			self.logger.warn("ALTouch is not available")
+			self.touch = None
+			
+		try:
 			self.connectionManager = ALProxy("ALConnectionManager", config.Nao_IP, config.Nao_Port)
 		except:
 			self.logger.warn("ALConnectionManager is not available")
@@ -102,6 +108,14 @@ class CorMenuModule(ALModule):
 			self.logger.warn("ALAudioPlayer is not avaiable")
 			self.audio = None
 			
+		try:
+			self.audioDev = ALProxy("ALAudioDevice")
+		except:
+			self.logger.warn("ALAudioDevice is not avaiable")
+			self.audioDev = None
+			
+		
+			
 		global memory
 		memory = ALProxy("ALMemory")
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
@@ -109,7 +123,7 @@ class CorMenuModule(ALModule):
 			"onTripleChest")
 			
 		if lang.LanguageName not in self.tts.getAvailableLanguages():
-			print("Language not installed on Nao, please install it.")
+			self.logger.error("Language not installed on Nao, please install it.")
 			sys.exit(1)
 	
 	def disconnect(self):
@@ -133,6 +147,15 @@ class CorMenuModule(ALModule):
 		
 	def onTripleChest(self, *_args):
 		global memory
+		
+		self.beforeVolume = self.audioDev.getOutputVolume()
+		self.audioDev.setOutputVolume(100)
+		if self.audioDev.isAudioOutMuted():
+			self.audioMute = True
+			self.audioDev.muteAudioOut(False)
+		else:
+			self.audioMute = False
+		
 		memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName())
 		
@@ -217,6 +240,70 @@ class CorMenuModule(ALModule):
 			self.getName(),
 			"onRearOffset")
 	
+	def onFrontVolume(self, *_args):
+		global memory
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		
+		self.volume += 1
+		
+		self.tts.say(lang.VolumeChange %(self.volume))
+		
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontVolume")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleVolume")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onRearVolume")
+		
+	def onMiddleVolume(self, *_args):
+		global memory
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		
+		self.audioDev.setOutputVolume(self.volume)
+		self.beforeVolume = self.volume
+		self.tts.say(lang.VolumeSet %(self.volume))
+		self.audioMute = False
+		
+		self.close()
+	
+	def onRearVolume(self, *_args):
+		global memory
+		memory.unsubscribeToEvent("MiddleTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("FrontTactilTouched",
+			self.getName())
+		memory.unsubscribeToEvent("RearTactilTouched",
+			self.getName())
+		
+		if self.volume > 0:
+			self.volume -= 1
+			self.tts.say(lang.VolumeChange %(self.volume))
+		else:
+			self.tts.say(lang.VolumeChangeFail)
+			
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontVolume")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleVolume")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onRearVolume")
+	
 	def onFrontHead(self, *_args):
 		global memory
 		memory.unsubscribeToEvent("MiddleTactilTouched",
@@ -254,7 +341,13 @@ class CorMenuModule(ALModule):
 		
 		flag_Return = False
 		
+		for value in self.touch.getStatus():
+			if value[0] == "MiddleTactilTouched":
+				while value[1]:
+					time.sleep(0.001)
+		
 		if self.menu[self.menuVal] == "init":
+			#
 			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
 		elif self.menu[self.menuVal] == "disconnect":
@@ -280,6 +373,8 @@ class CorMenuModule(ALModule):
 				self.getName(),
 				"onRearOffset")
 		elif self.menu[self.menuVal] == "changeVolume":
+			#flag_Return = True
+			self.volume = self.audioDev.getOutputVolume()
 			self.changeVolume()
 		elif self.menu[self.menuVal] == "fastReboot":
 			self.fastReboot()
@@ -461,6 +556,9 @@ class CorMenuModule(ALModule):
 		global memory
 		self.tts.setLanguage(self.language)
 		self.menuVal = 0
+		if self.audioDev.getOutputVolume() == 100:
+			self.audioDev.setOutputVolume(self.beforeVolume)
+		self.audioDev.muteAudioOut(self.audioMute)
 		
 		for sub in memory.getSubscribers("MiddleTactilTouched"):
 			if sub == self.getName():
