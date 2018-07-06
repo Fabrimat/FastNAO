@@ -1,10 +1,10 @@
 # -*- encoding: UTF-8 -*-
-#  ______        _   _   _          ____  
-# |  ____|      | | | \ | |   /\   / __ \ 
+#  ______        _   _   _          ____
+# |  ____|      | | | \ | |   /\   / __ \
 # | |__ __ _ ___| |_|  \| |  /  \ | |  | |
 # |  __/ _` / __| __| . ` | / /\ \| |  | |
 # | | | (_| \__ \ |_| |\  |/ ____ \ |__| |
-# |_|  \__,_|___/\__|_| \_/_/    \_\____/   
+# |_|  \__,_|___/\__|_| \_/_/    \_\____/
 
 # The language file you will use
 # IT stands for IT-lang.py
@@ -33,6 +33,8 @@ Spell_Password = False
 
 # Say the message when pressing three times on the chest button
 Intro = False
+
+InternetCheckIP = "http://www.google.com"
 
 # Do not change!
 Config_Version = 0.2
