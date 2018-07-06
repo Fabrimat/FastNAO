@@ -14,7 +14,7 @@ Then restart NAOqi.
 Now, you just have to press 3 times the Nao's chest button to forcefully disconnect Choregraphe
 
 ## Requirements
-* A Nao Robot.
+* A Nao Robot, this software has been tested only on H25.
 
 ## Help needed
 You can help me by <a href="https://github.com/Fabrimat/FastNAO/issues">proposing improvements or reporting bugs</a>.
