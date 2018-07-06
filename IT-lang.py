@@ -8,24 +8,28 @@
 
 LanguageName = "Italian"
 
-ChorDiscSucc = "Connessione a Choregraphe rimossa con successo."
-ChorDiscFail = "Connessione a Choregraphe non trovata."
-ChorDiscError = "Errore durante la rimozione della connessione a Choregraphe."
+ChorDiscSucc = "Connessione a Coregraf rimossa con successo."
+ChorDiscFail = "Connessione a Coregrap non trovata."
+ChorDiscError = "Errore durante la rimozione della connessione a Coregrap."
 
 Welcome1 = "Hai avviato il menù avanzato, spero che tu sappia cosa stai facendo!"
 Welcome2 = "Usa i sensori sulla mia testa per muoverti nel menù."
 
-OffsetChange = "Compenso: %s"
-OffsetSet = "Compenso impostato a %s!"
+OffsetChange = "Compenso dal pavimento: %s"
+OffsetSet = "Compenso dal pavimento impostato a %s!"
 OffsetChangeFail = "Non posso farlo!"
+
+VolumeChange = "Volume: %s"
+VolumeSet = "Volume impostato a %s!"
+VolumeChangeFail = "Non posso farlo!"
 
 UnknownError = "Errore sconosciuto."
 
 MainMenuChange = "%s selezionato!"
 
 Disconnect = "Disconnetti Choregraphe"
-WiFiOn = "Attiva WiFi"
-WiFiOff = "Disattiva WiFi"
+WiFiOn = "Attiva WaiFai"
+WiFiOff = "Disattiva WaiFai"
 AutoLifeToggle = "Alterna la vita autonoma"
 ChangeOffsetFloor = "Cambia l'altezza dal pavimento"
 ChangeVolume = "Cambia il volume"
@@ -33,13 +37,13 @@ Status = "Stato"
 FastReboot = "Riavvio rapido"
 Close = "Chiudi il menù"
 
-NothingSelected = "Non hai selezionato niente! Chiudo."
+NothingSelected = "Non hai selezionato niente!"
 
 WiFiError = "Errore, ALConnectionManager non è più disponibile"
-WifiActivated = "Tethering WiFi attivato."
-WifiAlreadyActive = "Il Tethering WiFi è già attivo."
-WifiDeactivated = "Tethering WiFi disattivato."
-WifiAlreadyInactive = "Il Tethering WiFi è già disattivato."
+WifiActivated = "Tedering WiFi attivato."
+WifiAlreadyActive = "Il Tedering WiFi è già attivo."
+WifiDeactivated = "Tedering WiFi disattivato."
+WifiAlreadyInactive = "Il Tedering WiFi è già disattivato."
 
 VirtualRobotName = "Robot Virtuale"
 
