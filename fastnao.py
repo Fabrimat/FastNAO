@@ -93,14 +93,14 @@ class FastNaoModule(ALModule):
 
 		def incrementAction(self):
 			if self._menuVal >= self._menuLen:
-				self._menuVal = 0
+				self._menuVal = 1
 				return False
 			else:
 				self._menuVal += 1
 				return True
 
 		def decrementAction(self):
-			if self._menuVal <= 0:
+			if self._menuVal <= 1:
 				self._menuVal = self._menuLen -1
 				return False
 			else:
