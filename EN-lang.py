@@ -1,12 +1,16 @@
 # -*- encoding: UTF-8 -*-
-#  ______        _   _   _          ____  
-# |  ____|      | | | \ | |   /\   / __ \ 
+#  ______        _   _   _          ____
+# |  ____|      | | | \ | |   /\   / __ \
 # | |__ __ _ ___| |_|  \| |  /  \ | |  | |
 # |  __/ _` / __| __| . ` | / /\ \| |  | |
 # | | | (_| \__ \ |_| |\  |/ ____ \ |__| |
-# |_|  \__,_|___/\__|_| \_/_/    \_\____/  
+# |_|  \__,_|___/\__|_| \_/_/    \_\____/
 
+# Language name in English, as reported here http://doc.aldebaran.com/2-1/family/robots/languages.html
 LanguageName = "English"
+
+Enabled = "FastNAO enabled succesfully!"
+FailedEnabling = "Errors occurred when enabling FastNAO."
 
 ChorDiscSucc = "Choregraphe connection removed successfully."
 ChorDiscFail = "Choregraphe connection not found."
@@ -17,11 +21,13 @@ Welcome2 = "Use my head sensors to move between the options."
 
 OffsetChange = "Offset: %s"
 OffsetSet = "Offset set to %s!"
-OffsetChangeFail = "Cannot do it"
+
+VolumeChange = "Volume: %s"
+VolumeSet = "Volume set to %s!"
 
 UnknownError = "Unknown error."
 
-MainMenuChange = "%s selected!"
+MainMenuChange = "%s!"
 
 Disconnect = "Disconnect Choregraphe"
 WiFiOn = "Activate WiFi"
@@ -33,7 +39,7 @@ Status = "Status"
 FastReboot = "Fast Reboot"
 Close = "Close the menu"
 
-NothingSelected = "Nothing selected! Quitting."
+NothingSelected = "Nothing selected!"
 
 WiFiError = "Error, ALConnectionManager is no longer avaiable"
 WifiActivated = "Wifi Tethering activated."
@@ -59,9 +65,11 @@ WifiInactive = "WiFi Tethering is not active"
 InternetOn = "I am connected to the Internet"
 InternetOff = "I am not connected to the Internet"
 
+DiskFull = "Warning! My disk is almost full!"
+
 Surrdender = "I surrender."
 
 Reboot = "Rebooting!"
 
 # Do not change!
-Config_Version = 0.2
+Config_Version = 0.3

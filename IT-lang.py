@@ -1,12 +1,16 @@
 # -*- encoding: UTF-8 -*-
-#  ______        _   _   _          ____  
-# |  ____|      | | | \ | |   /\   / __ \ 
+#  ______        _   _   _          ____
+# |  ____|      | | | \ | |   /\   / __ \
 # | |__ __ _ ___| |_|  \| |  /  \ | |  | |
 # |  __/ _` / __| __| . ` | / /\ \| |  | |
 # | | | (_| \__ \ |_| |\  |/ ____ \ |__| |
-# |_|  \__,_|___/\__|_| \_/_/    \_\____/  
+# |_|  \__,_|___/\__|_| \_/_/    \_\____/
 
+# Language name in English, as reported here http://doc.aldebaran.com/2-1/family/robots/languages.html
 LanguageName = "Italian"
+
+Enabled = "FastNAO abilitato correttamente!"
+FailedEnabling = "Ci sono stati degli errori nel caricamento di FastNAO."
 
 ChorDiscSucc = "Connessione a Coregraf rimossa con successo."
 ChorDiscFail = "Connessione a Coregraf non trovata."
@@ -15,17 +19,15 @@ ChorDiscError = "Errore durante la rimozione della connessione a Coregraf."
 Welcome1 = "Hai avviato il menù avanzato, spero che tu sappia cosa stai facendo!"
 Welcome2 = "Usa i sensori sulla mia testa per muoverti nel menù."
 
-OffsetChange = "Compenso dal pavimento: %s"
-OffsetSet = "Compenso dal pavimento impostato a %s!"
-OffsetChangeFail = "Non posso farlo!"
+OffsetChange = "Altezza dal pavimento: %s"
+OffsetSet = "Altezza dal pavimento impostata a %s!"
 
 VolumeChange = "Volume: %s"
 VolumeSet = "Volume impostato a %s!"
-VolumeChangeFail = "Non posso farlo!"
 
 UnknownError = "Errore sconosciuto."
 
-MainMenuChange = "%s selezionato!"
+MainMenuChange = "%s"
 
 Disconnect = "Disconnetti Choregraphe"
 WiFiOn = "Attiva WaiFai"
@@ -37,7 +39,7 @@ Status = "Stato"
 FastReboot = "Riavvio rapido"
 Close = "Chiudi il menù"
 
-NothingSelected = "Non hai selezionato niente!"
+NothingSelected = "Non hai selezionato niente"
 
 WiFiError = "Errore, ALConnectionManager non è più disponibile"
 WifiActivated = "Tedering WaiFai attivato."
@@ -63,9 +65,11 @@ WifiInactive = "Il Tedering WaiFai non è attivo."
 InternetOn = "Sono connesso a Internet."
 InternetOff = "Non sono connesso a Internet."
 
+DiskFull = "Attenzione! La mia memoria è quasi piena!"
+
 Surrdender = "Mi arrendo."
 
 Reboot = "Mi sto riavviando!"
 
 # Do not change!
-Config_Version = 0.2
+Config_Version = 0.3

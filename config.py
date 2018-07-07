@@ -7,17 +7,17 @@
 # |_|  \__,_|___/\__|_| \_/_/    \_\____/
 
 # The language file you will use
-# IT stands for IT-lang.py
-Language = "IT"
+# EN stands for EN-lang.py
+Language = "EN"
 
-# The Nao ip, insert 127.0.0.1 if the app runs on the Nao
+# The Nao IP, use 127.0.0.1 if the app runs on the Nao
 Nao_IP = "127.0.0.1"
 # Naoqi port
 Nao_Port = 9559
 
-# Nao WiFi network's SSID
+# Nao WiFi tethering's SSID
 Tethering_SSID = "Nao-WiFi"
-# Nao WiFi network's password
+# Nao WiFi tethering's password
 Tethering_Password = "nao12345"
 # WiFi country, you should use your own country to avoid fines
 Wifi_Country = "IT"
@@ -31,10 +31,17 @@ Say_Passowrd = False
 # Spell Password or not
 Spell_Password = False
 
+Offset_From_Floor_Difference = 1.0
+Volume_Difference = 10
+
 # Say the message when pressing three times on the chest button
 Intro = False
 
-InternetCheckIP = "http://www.google.com"
+# Options for Internet connection check
+# Don't touch if you don't know what you are doing
+Internet_Check_IP = "8.8.8.8"
+Internet_Check_Port = 53
+Internet_Check_TimeOut = 3
 
 # Do not change!
-Config_Version = 0.2
+Config_Version = 0.3
