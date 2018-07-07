@@ -8,7 +8,7 @@ FastNAO has been tested on Nao H25 and is licensed under the Apache License 2.0.
 ### Italiano
 FastNao è un programma che può essere installato sul Nao e permette di prenderne il controllo senza il bisogno di altri dispositivi, può essere molto utile quando non ci si riesce a connettere al robot e si vuole abilitare il Tethering WiFi oppure quando si vuole disconnettere Choregraphe senza il bisogno di effettuare un riavvio.
 
-FastNAO è stato testato su un Nao H25 sotto licenza Apache 2.0.
+FastNAO è stato testato su un Nao H25 ed è rilasciato sotto licenza Apache 2.0.
 
 ## How it works
 Upload the script on the robot, for instance to `/home/nao/fastnao.py`, then edit the `/home/nao/naoqi/preferences/autoload.ini` file to have:
@@ -16,8 +16,8 @@ Upload the script on the robot, for instance to `/home/nao/fastnao.py`, then edi
 `[python]`<br/>
 `/home/nao/fastnao.py`
 
-Then restart NAOqi.
-Now, you just have to press 3 times the Nao's chest button to forcefully disconnect Choregraphe
+Then restart NAOqi.  
+Now, you just have to press 3 times the Nao's chest button to start FastNAO and then use the head sensors to move between the options.
 
 ## Requirements
 * A Nao Robot with Naoqi 2.1.4.
