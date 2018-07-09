@@ -30,8 +30,8 @@ UnknownError = "Errore sconosciuto."
 MainMenuChange = "%s"
 
 Disconnect = "Disconnetti Choregraphe"
-WiFiOn = "Attiva WaiFai"
-WiFiOff = "Disattiva WaiFai"
+WiFiOn = "Attiva UaiFai"
+WiFiOff = "Disattiva UaiFai"
 AutoLifeToggle = "Alterna la vita autonoma"
 ChangeOffsetFloor = "Cambia l'altezza dal pavimento"
 ChangeVolume = "Cambia il volume"
@@ -42,9 +42,9 @@ Close = "Chiudi il menù"
 NothingSelected = "Non hai selezionato niente"
 
 WiFiError = "Errore, ALConnectionManager non è più disponibile"
-WifiActivated = "Tedering WaiFai attivato."
-WifiAlreadyActive = "Il Tedering WaiFai è già attivo."
-WifiDeactivated = "Tedering WaiFai disattivato."
+WifiActivated = "Tedering UaiFai attivato."
+WifiAlreadyActive = "Il Tedering UaiFai è già attivo."
+WifiDeactivated = "Tedering UaiFai disattivato."
 WifiAlreadyInactive = "Il Tedering WiFi è già disattivato."
 
 VirtualRobotName = "Robot Virtuale"
@@ -59,9 +59,9 @@ AutoSafeGuard = "Protezione"
 WifiActive = "Il Tethering WiFi è attivo."
 UpperLetter = "%s maiuscola \pau=100\ "
 LowerLetter = "%s minuscola \pau=100\ "
-WifiSSID = "L' S S I D del Tedering WaiFai è %s"
-WifiPassword = "La password del Tedering WaiFai è %s"
-WifiInactive = "Il Tedering WaiFai non è attivo."
+WifiSSID = "L' S S I D del Tedering UaiFai è %s"
+WifiPassword = "La password del Tedering UaiFai è %s"
+WifiInactive = "Il Tedering UaiFai non è attivo."
 InternetOn = "Sono connesso a Internet."
 InternetOff = "Non sono connesso a Internet."
 
@@ -72,4 +72,4 @@ Surrdender = "Mi arrendo."
 Reboot = "Mi sto riavviando!"
 
 # Do not change!
-Config_Version = 0.3
+Config_Version = 0.3.1
