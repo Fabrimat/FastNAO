@@ -72,4 +72,4 @@ Surrdender = "I surrender."
 Reboot = "Rebooting!"
 
 # Do not change!
-Config_Version = 0.3
+Config_Version = 0.3.1
