@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.9'
+__version__ = '0.9.1'
 
 print("""
 FastNAO v%s started!
@@ -11,7 +11,7 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = 0.3
+confVer = 0.3.1
 
 try:
 	import config
@@ -65,160 +65,163 @@ def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port
 	except:
 		return False
 
+class Menu:
+	_menu = {
+		"0.init":lang.NothingSelected,
+		"1.disconnect":lang.Disconnect,
+		"2.activateWiFi":lang.WiFiOn,
+		"3.deactivateWiFi":lang.WiFiOff,
+		"4.autonomousLifeToggle":lang.AutoLifeToggle,
+		"5.changeOffsetFromFloor":lang.ChangeOffsetFloor,
+		"6.changeVolume":lang.ChangeVolume,
+		"7.status":lang.Status,
+		#"8.fastReboot":lang.FastReboot,
+		"9.close":lang.Close,
+	}
+	_menuKeys = sorted(_menu.iterkeys())
+	_menuVal = 0
+	_menuLen = len(_menu)
+	_menuSelected = False
+
+	def __init__(self, name):
+		self._name = name
+
+	def getActionKey(self):
+		return self._menuKeys[self._menuVal][2:]
+
+	def incrementAction(self):
+		if self._menuVal >= self._menuLen-1:
+			self._menuVal = 1
+			return False
+		else:
+			self._menuVal += 1
+			return True
+
+	def decrementAction(self):
+		if self._menuVal <= 1:
+			self._menuVal = self._menuLen -1
+			return False
+		else:
+			self._menuVal -= 1
+			return True
+
+	def getActionLang(self):
+		return self._menu[self._menuKeys[self._menuVal]]
+
+	def reset(self):
+		self._menuVal = 0
+		self._menuSelected = False
+
+	def getName(self):
+		return self._name
+
+	def setName(self, name):
+		self._name = name
+
+	def setSelected(self):
+		self._menuSelected = self._menuKeys[self._menuVal]
+
+	def getSelectedKey(self):
+		return self._menuSelected
+
+	def getSelectedLang(self):
+		if self._menuSelected:
+			return self._menu[self._menuSelected]
+		else:
+			self._menu["init"]
+
+class Volume:
+
+	_difference = 10
+	def __init__(self, name, module, defaultDifference = 10):
+		self._name = name
+		self._difference = defaultDifference
+		self._module = module
+		self.setDefaultVolume()
+
+	def setDefaultVolume(self):
+		self._defaultVolume = self._module.getOutputVolume()
+		self._defaultMuted = self._module.isAudioOutMuted()
+		self._volume = self._defaultVolume
+		self._muted = self._defaultMuted
+
+	def volumeOn(self, value=config.Default_Volume):
+		self.setDefaultVolume()
+		self._module.muteAudioOut(False)
+		self._module.setOutputVolume(value)
+
+	def volumeOff(self):
+		self.setDefaultVolume()
+		self._module.muteAudioOut(True)
+
+	def volumeReset(self):
+		self._module.muteAudioOut(self._defaultMuted)
+		self._module.setOutputVolume(self._defaultVolume)
+
+	def incrementVolume(self, value=_difference):
+		if self._volume < 100-value:
+			self._volume += value
+		else:
+			self._volume = 100
+
+	def getVolume(self):
+		return self._volume
+
+	def setVolume(self):
+		self._module.muteAudioOut(False)
+		self._module.setOutputVolume(self._volume)
+
+	def decrementVolume(self, value=_difference):
+		if self._volume > 0+value:
+			self._volume -= value
+		else:
+			self._volume = 0
+
+	def getName(self):
+		return self._name
+
+	def setName(self, name):
+		self._name = name
+
+class RobotOffsetFromFloor:
+	
+	_difference = 1
+	def __init__(self, name, module, defaultDifference = 1):
+		self._name = name
+		self._difference = defaultDifference
+		self._module = module
+		self.setDefaultOffset()
+
+	def setDefaultOffset(self):
+		self._defaultOffsetFromFloor = self._module.getRobotOffsetFromFloor()
+		self._offsetFromFloor = self._defaultOffsetFromFloor
+
+	def resetOffset(self):
+		self._module.setRobotOffsetFromFloor(self._defaultOffsetFromFloor)
+
+	def incrementOffset(self, value=_difference):
+		self._offsetFromFloor += value
+
+	def decrementOffset(self, value=_difference):
+		if self._offsetFromFloor > 0+value:
+			self._offsetFromFloor -= value
+		else:
+			self._offsetFromFloor = 0
+
+	def setOffset(self):
+		self._module.setRobotOffsetFromFloor(self._offsetFromFloor)
+
+	def getOffset(self):
+		return self._offsetFromFloor
+
+	def getName(self):
+		return self._name
+
+	def setName(self, name):
+		self._name = name
+		
 class FastNaoModule(ALModule):
 
-	class Menu:
-		_menu = {
-			"init":lang.NothingSelected,
-			"disconnect":lang.Disconnect,
-			"activateWiFi":lang.WiFiOn,
-			"deactivateWiFi":lang.WiFiOff,
-			"autonomousLifeToggle":lang.AutoLifeToggle,
-			"changeOffsetFromFloor":lang.ChangeOffsetFloor,
-			"changeVolume":lang.ChangeVolume,
-			"status":lang.Status,
-			"fastReboot":lang.FastReboot,
-			"close":lang.Close,
-		}
-		_menukeys = list(_menu.keys())
-		_menuVal = 0
-		_menuLen = len(_menu)
-		_menuSelected = False
-
-		def __init__(self, name):
-			self._name = name
-
-		def getActionKey(self):
-			return self._menukeys[self._menuVal]
-
-		def incrementAction(self):
-			if self._menuVal >= self._menuLen:
-				self._menuVal = 1
-				return False
-			else:
-				self._menuVal += 1
-				return True
-
-		def decrementAction(self):
-			if self._menuVal <= 1:
-				self._menuVal = self._menuLen -1
-				return False
-			else:
-				self._menuVal -= 1
-				return True
-
-		def getActionLang(self):
-			return self._menu[self._menuKeys[self._menuVal]]
-
-		def reset(self):
-			self._menuVal = 0
-			self._menuSelected = False
-
-		def getName(self):
-			return self._name
-
-		def setName(self, name):
-			self._name = name
-
-		def setSelected(self):
-			self._menuSelected = self._menukeys[self._menuVal]
-
-		def getSelectedKey(self):
-			return self._menuSelected
-
-		def getSelectedLang(self):
-			if self._menuSelected:
-				return self._menu[self._menuSelected]
-			else:
-				self._menu["init"]
-
-	class Volume:
-
-		def __init__(self, name, module, defalutDifference = 10):
-			self._name = name
-			self._difference = defalutDifference
-			self._module = module
-			self.setDefaultVolume()
-
-		def setDefaultVolume(self):
-			self._defaultVolume = self._module.getOutputVolume()
-			self._defaultMuted = self._module.isAudioOutMuted()
-			self._volume = self._defaultVolume
-			self._muted = self._defaultMuted
-
-		def volumeOn(self, value=100):
-			self.setDefaultVolume()
-			self._module.muteAudioOut(False)
-			self._module.setOutputVolume(value)
-
-		def volumeOff(self):
-			self.setDefaultVolume()
-			self._module.muteAudioOut(True)
-
-		def volumeReset(self):
-			self._module.muteAudioOut(self._defaultMuted)
-			self._module.setOutputVolume(self._defaultVolume)
-
-		def incrementVolume(self, value=self._difference):
-			if self._volume < 100-value:
-				self._volume += value
-			else:
-				self._volume = 100
-
-		def getVolume(self):
-			return self._volume
-
-		def setVolume(self):
-			self._module.muteAudioOut(False)
-			self._module.setOutputVolume(self._volume)
-
-		def decrementVolume(self, value=self._difference):
-			if self._volume > 0+value:
-				self._volume -= value
-			else:
-				self._volume = 0
-
-		def getName(self):
-			return self._name
-
-		def setName(self, name):
-			self._name = name
-
-	class RobotOffsetFromFloor:
-
-		def __init__(self, name, module, defalutDifference = 1):
-			self._name = name
-			self._difference = defalutDifference
-			self._module = module
-			self.setDefaultOffset()
-
-		def setDefaultOffset():
-			self._defaultOffsetFromFloor = self._module.getRobotOffsetFromFloor()
-			self._offsetFromFloor = self._defaultOffsetFromFloor
-
-		def resetOffset(self):
-			self._module.setRobotOffsetFromFloor(self._defaultOffsetFromFloor)
-
-		def incrementOffset(self, value=self._difference):
-			self._offsetFromFloor += value
-
-		def decrementOffset(self, value=self._difference):
-			if self._offsetFromFloor > 0+value:
-				self._offsetFromFloor -= value
-			else:
-				self._offsetFromFloor = 0
-
-		def setOffset(self):
-			self._module.setRobotOffsetFromFloor(self._offsetFromFloor)
-
-		def getOffset(self):
-			return self._offsetFromFloor
-
-		def getName(self):
-			return self._name
-
-		def setName(self, name):
-			self._name = name
 
 	def __init__(self, name):
 		ALModule.__init__(self, name)
@@ -303,11 +306,13 @@ class FastNaoModule(ALModule):
 			sys.exit(1)
 
 		if warnLevel == 1:
-			self.tts.say(lang.FailedEnabling)
+			if not config.Silent_Bootup:
+				self.tts.say(lang.FailedEnabling)
 		if warnLevel > 0:
 			sys.exit(1)
 		else:
-			self.tts.say(lang.Enabled)
+			if not config.Silent_Bootup:
+				self.tts.say(lang.Enabled)
 
 		self._menu = Menu(name)
 		self._volume = Volume(name, self.audioDev, config.Volume_Difference)
@@ -337,7 +342,8 @@ class FastNaoModule(ALModule):
 
 	def checkDisk(self):
 		disk = self.sys.diskFree(False)
-		if disk < 10:
+		percent = disk[0][3][1]*100/disk[0][2][1]
+		if percent > 90:
 			self.notification.add(lang.DiskFull)
 		return
 
@@ -391,7 +397,7 @@ class FastNaoModule(ALModule):
 
 		if not self._menu.getSelectedKey():
 			self._menu.incrementAction()
-			self.tts.say(lang.MainMenuChange %(self._menu.getActionLang())
+			self.tts.say(lang.MainMenuChange %(self._menu.getActionLang()))
 		elif self._menu.getSelectedKey() == "changeOffsetFromFloor":
 			self._offset.incrementOffset()
 			self.tts.say(lang.OffsetChange %(self._offset.getOffset()))
@@ -453,7 +459,7 @@ class FastNaoModule(ALModule):
 
 		if not self._menu.getSelectedKey():
 			self._menu.decrementAction()
-			self.tts.say(lang.MainMenuChange %(self._menu.getActionLang())
+			self.tts.say(lang.MainMenuChange %(self._menu.getActionLang()))
 		elif self._menu.getSelectedKey() == "changeOffsetFromFloor":
 			self._offset.decrementOffset()
 			self.tts.say(lang.OffsetChange %(self._offset.getOffset()))
@@ -474,17 +480,17 @@ class FastNaoModule(ALModule):
 
 	def _actionChooser(self):
 
-		flag_Loop = True
-		while flag_Loop:
-			status = self.touch.getStatus()
-			for value in status:
-				if value[0] == "MiddleTactilTouched":
-					if value[1]:
-						time.sleep(0.001)
-					else:
-						flag_Loop = False
-
-		key = self._menu.getSelectedKey()
+		# flag_Loop = True
+		# while flag_Loop:
+			# status = self.touch.getStatus()
+			# for value in status:
+				# if value[0] == "MiddleTactilTouched":
+					# if value[1]:
+						# time.sleep(0.001)
+					# else:
+						# flag_Loop = False
+		# print "loop"
+		key = self._menu.getSelectedKey()[2:]
 		if key == "init":
 			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
