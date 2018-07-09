@@ -8,7 +8,7 @@
 
 # The language file you will use
 # EN stands for EN-lang.py
-Language = "EN"
+Language = "IT"
 
 # The Nao IP, use 127.0.0.1 if the app runs on the Nao
 Nao_IP = "127.0.0.1"
@@ -31,9 +31,12 @@ Say_Passowrd = False
 # Spell Password or not
 Spell_Password = False
 
+Default_Volume = 70
+
 Offset_From_Floor_Difference = 1.0
 Volume_Difference = 10
 
+Silent_Bootup = False
 # Say the message when pressing three times on the chest button
 Intro = False
 
@@ -44,4 +47,4 @@ Internet_Check_Port = 53
 Internet_Check_TimeOut = 3
 
 # Do not change!
-Config_Version = 0.3
+Config_Version = 0.3.1
