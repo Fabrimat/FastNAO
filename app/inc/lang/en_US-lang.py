@@ -32,7 +32,7 @@ MainMenuChange = "%s!"
 Disconnect = "Disconnect Choregraphe"
 WiFiOn = "Activate WiFi"
 WiFiOff = "Deactivate WiFi"
-AutoLifeToggle = "Autonomous Life Toggle"
+AutoLifeToggle = "Toggle Autonomous Life"
 ChangeOffsetFloor = "Change Offset from floor"
 ChangeVolume = "Change volume"
 Status = "Status"
@@ -72,4 +72,7 @@ Surrdender = "I surrender."
 Reboot = "Rebooting!"
 
 # Do not change!
-Config_Version = 0.3.1
+Config_Version = 0.3.2
+
+if __name__ == '__main__':
+    print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

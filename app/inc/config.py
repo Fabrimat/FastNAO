@@ -7,8 +7,11 @@
 # |_|  \__,_|___/\__|_| \_/_/    \_\____/
 
 # The language file you will use
-# EN stands for EN-lang.py
-Language = "IT"
+# Use only locale codes or "default"
+# en_US stands for en_US-lang.py
+# If "default" is set the loaded language will be used
+# If the loaded language is not supported English will be used
+Language = "default"
 
 # The Nao IP, use 127.0.0.1 if the app runs on the Nao
 Nao_IP = "127.0.0.1"
@@ -17,6 +20,8 @@ Nao_Port = 9559
 
 # Nao WiFi tethering's SSID
 Tethering_SSID = "Nao-WiFi"
+Tethering_SSID_Append_Name = True
+Tethering_SSID_Append_Random = True
 # Nao WiFi tethering's password
 Tethering_Password = "nao12345"
 # WiFi country, you should use your own country to avoid fines
@@ -47,4 +52,7 @@ Internet_Check_Port = 53
 Internet_Check_TimeOut = 3
 
 # Do not change!
-Config_Version = 0.3.1
+Config_Version = 0.3.2
+
+if __name__ == '__main__':
+    print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

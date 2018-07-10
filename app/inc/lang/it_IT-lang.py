@@ -45,7 +45,7 @@ WiFiError = "Errore, ALConnectionManager non è più disponibile"
 WifiActivated = "Tedering UaiFai attivato."
 WifiAlreadyActive = "Il Tedering UaiFai è già attivo."
 WifiDeactivated = "Tedering UaiFai disattivato."
-WifiAlreadyInactive = "Il Tedering WiFi è già disattivato."
+WifiAlreadyInactive = "Il Tedering UaiFai è già disattivato."
 
 VirtualRobotName = "Robot Virtuale"
 
@@ -56,7 +56,7 @@ AutoSolitary = "Solitaria"
 AutoInteractive = "Interattiva"
 AutoDisabled = "Disattivata"
 AutoSafeGuard = "Protezione"
-WifiActive = "Il Tethering WiFi è attivo."
+WifiActive = "Il Tedering UaiFai è attivo."
 UpperLetter = "%s maiuscola \pau=100\ "
 LowerLetter = "%s minuscola \pau=100\ "
 WifiSSID = "L' S S I D del Tedering UaiFai è %s"
@@ -72,4 +72,7 @@ Surrdender = "Mi arrendo."
 Reboot = "Mi sto riavviando!"
 
 # Do not change!
-Config_Version = 0.3.1
+Config_Version = 0.3.2
+
+if __name__ == '__main__':
+    print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

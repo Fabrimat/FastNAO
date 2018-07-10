@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.9.1'
+__version__ = '0.10'
 
 print("""
 FastNAO v%s started!
@@ -11,7 +11,7 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = 0.3.1
+confVer = 0.3.2
 
 try:
 	import config
@@ -21,27 +21,13 @@ try:
 except ImportError:
 	print("Configuration file not found.")
 
-try:
-	lang = __import__("%s-lang" %(config.Language))
-except ImportError:
-	if config.language is not "EN":
-		try:
-			lang = __import__("EN-lang")
-		except ImportError:
-			print("Language file not found.")
-			sys.exit(1)
-	else:
-		print("Language file not found.")
-		sys.exit(1)
-
-if lang.Config_Version != confVer:
-	print("Language file not valid. Please update it.")
-	sys.exit(1)
+lang = None
 
 import sys
 import time
 import subprocess
 import socket
+import os
 
 from optparse import OptionParser
 
@@ -67,27 +53,29 @@ def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port
 
 class Menu:
 	_menu = {
-		"0.init":lang.NothingSelected,
-		"1.disconnect":lang.Disconnect,
-		"2.activateWiFi":lang.WiFiOn,
-		"3.deactivateWiFi":lang.WiFiOff,
-		"4.autonomousLifeToggle":lang.AutoLifeToggle,
-		"5.changeOffsetFromFloor":lang.ChangeOffsetFloor,
-		"6.changeVolume":lang.ChangeVolume,
-		"7.status":lang.Status,
-		#"8.fastReboot":lang.FastReboot,
-		"9.close":lang.Close,
+		"00.init":lang.NothingSelected,
+		"01.disconnect":lang.Disconnect,
+		"02.activateWiFi":lang.WiFiOn,
+		"03.deactivateWiFi":lang.WiFiOff,
+		"04.autonomousLifeToggle":lang.AutoLifeToggle,
+		"05.changeOffsetFromFloor":lang.ChangeOffsetFloor,
+		"06.changeVolume":lang.ChangeVolume,
+		"07.status":lang.Status,
+		#"08.fastReboot":lang.FastReboot,
+		"99.close":lang.Close,
 	}
 	_menuKeys = sorted(_menu.iterkeys())
 	_menuVal = 0
 	_menuLen = len(_menu)
 	_menuSelected = False
 
+	indexValue = 3
+
 	def __init__(self, name):
 		self._name = name
 
 	def getActionKey(self):
-		return self._menuKeys[self._menuVal][2:]
+		return self._menuKeys[self._menuVal][indexValue:]
 
 	def incrementAction(self):
 		if self._menuVal >= self._menuLen-1:
@@ -122,7 +110,7 @@ class Menu:
 		self._menuSelected = self._menuKeys[self._menuVal]
 
 	def getSelectedKey(self):
-		return self._menuSelected
+		return self._menuSelected[indexValue:]
 
 	def getSelectedLang(self):
 		if self._menuSelected:
@@ -184,7 +172,7 @@ class Volume:
 		self._name = name
 
 class RobotOffsetFromFloor:
-	
+
 	_difference = 1
 	def __init__(self, name, module, defaultDifference = 1):
 		self._name = name
@@ -219,9 +207,72 @@ class RobotOffsetFromFloor:
 
 	def setName(self, name):
 		self._name = name
-		
-class FastNaoModule(ALModule):
 
+class Language:
+
+	dir = "inc/lang/"
+
+	def __init__(self, name, module):
+		self._name = name
+		self._module = module
+
+	def supportedLanguages(self):
+		locales = []
+		langFiles = []
+
+		i = 0
+		for filename in os.listdir(dir):
+			if filename.endswith("-lang.py"):
+				(locale, file) = filename.split("-")
+				langFiles.append(__import__("%s%s-lang" %(dir,locale)))
+				langs.append(locale)
+				i++
+		return locales, langFiles
+
+	def importLanguage(self):
+		global lang
+		if config.Language == "default":
+			locale = self._module.locale()
+			supported = self.supportedLanguages()
+			if locale in supported[0]:
+				i = 0
+				for langCode in supported[0]:
+					if locale == langCode:
+						lang = supported[1][i]
+					i++
+			else:
+				try:
+					lang = __import__("%sen_US-lang" %(dir))
+				except ImportError:
+					print("Error importing language file.")
+					return False
+		if lang.Config_Version != confVer:
+			print("Language file not valid. Please report the error.")
+			return False
+		return True
+
+	def setDefaultLanguage(self, defaultLang = _module.getLanguage()):
+		self._defaultLanguage = defaultLang
+		self._language = self._defaultLanguage
+
+	def languageReset(self):
+		self._module.setLanguage(self._defaultLanguage)
+
+	def getlanguage(self):
+		return self._language
+
+	def setLanguage(self, language =lang.LanguageName):
+		self._module.setLanguage(language)
+
+	def getName(self):
+		return self._name
+
+	def setName(self, name):
+		self._name = name
+
+
+
+class FastNaoModule(ALModule):
 
 	def __init__(self, name):
 		ALModule.__init__(self, name)
@@ -305,6 +356,7 @@ class FastNaoModule(ALModule):
 			self.logger.error("Language not installed on Nao, please install it.")
 			sys.exit(1)
 
+
 		if warnLevel == 1:
 			if not config.Silent_Bootup:
 				self.tts.say(lang.FailedEnabling)
@@ -317,6 +369,9 @@ class FastNaoModule(ALModule):
 		self._menu = Menu(name)
 		self._volume = Volume(name, self.audioDev, config.Volume_Difference)
 		self._offset = RobotOffsetFromFloor(name, self.autoLife, config.Offset_From_Floor_Difference)
+		self._language = Language(name, self.tts)
+
+		self.checkDisk()
 
 		global memory
 		memory = ALProxy("ALMemory")
@@ -345,7 +400,6 @@ class FastNaoModule(ALModule):
 		percent = disk[0][3][1]*100/disk[0][2][1]
 		if percent > 90:
 			self.notification.add(lang.DiskFull)
-		return
 
 	def disconnect(self):
 		""" Disconnect Choregraphe forcedly """
@@ -379,7 +433,7 @@ class FastNaoModule(ALModule):
 		self._volume.volumeOn()
 
 		self.language = self.tts.getLanguage()
-		self.tts.setLanguage(lang.LanguageName)
+		self._language.setLanguage()
 
 		self.audio.playFile("/usr/share/naoqi/wav/bip_gentle.wav")
 		if config.Intro:
@@ -479,18 +533,7 @@ class FastNaoModule(ALModule):
 			"onRearHead")
 
 	def _actionChooser(self):
-
-		# flag_Loop = True
-		# while flag_Loop:
-			# status = self.touch.getStatus()
-			# for value in status:
-				# if value[0] == "MiddleTactilTouched":
-					# if value[1]:
-						# time.sleep(0.001)
-					# else:
-						# flag_Loop = False
-		# print "loop"
-		key = self._menu.getSelectedKey()[2:]
+		key = self._menu.getSelectedKey()
 		if key == "init":
 			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
@@ -669,7 +712,7 @@ class FastNaoModule(ALModule):
 		self.audio.stopAll()
 		self.tts.stopAll()
 		self.postureProxy.stopMove()
-		self.tts.setLanguage(self.language)
+		self._language.languageReset()
 		self._menu.reset()
 		self._offset.resetOffset()
 		self._volume.volumeReset()
