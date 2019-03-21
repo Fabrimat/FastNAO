@@ -11,7 +11,7 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = 0.3.2
+confVer = "0.3.2"
 
 try:
 	import config
@@ -226,7 +226,7 @@ class Language:
 				(locale, file) = filename.split("-")
 				langFiles.append(__import__("%s%s-lang" %(dir,locale)))
 				langs.append(locale)
-				i++
+				i+=1
 		return locales, langFiles
 
 	def importLanguage(self):
@@ -239,7 +239,7 @@ class Language:
 				for langCode in supported[0]:
 					if locale == langCode:
 						lang = supported[1][i]
-					i++
+					i+=1
 			else:
 				try:
 					lang = __import__("%sen_US-lang" %(dir))
@@ -300,7 +300,7 @@ class FastNaoModule(ALModule):
 		except:
 			self.logger.warn("ALTextToSpeech is not available")
 			self.tts = None
-			warnLevel = 2
+			warnLevel = 1
 
 		try:
 			self.sys = ALProxy("ALSystem")
