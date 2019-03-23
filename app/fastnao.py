@@ -21,6 +21,7 @@ try:
 except ImportError:
 	print("Configuration file not found.")
 
+FastNAO = None
 lang = None
 
 import sys
@@ -274,6 +275,9 @@ class Language:
 
 class FastNaoModule(ALModule):
 
+	volume = Volume(self.getName(), self)
+	offset = RobotOffsetFromFloor(self.getName(), self)
+
 	def __init__(self, name):
 		ALModule.__init__(self, name)
 
@@ -356,14 +360,12 @@ class FastNaoModule(ALModule):
 			self.logger.error("Language not installed on Nao, please install it.")
 			sys.exit(1)
 
-
-		if warnLevel == 1:
-			if not config.Silent_Bootup:
-				self.tts.say(lang.FailedEnabling)
 		if warnLevel > 0:
 			sys.exit(1)
-		else:
-			if not config.Silent_Bootup:
+		if not config.Silent_Bootup:
+			if warnLevel == 1:
+				self.tts.say(lang.FailedEnabling)
+			else:
 				self.tts.say(lang.Enabled)
 
 		self._menu = Menu(name)
@@ -396,6 +398,7 @@ class FastNaoModule(ALModule):
 			"onRearHead")
 
 	def checkDisk(self):
+		""" Return occupied disk percentage """
 		disk = self.sys.diskFree(False)
 		percent = disk[0][3][1]*100/disk[0][2][1]
 		if percent > 90:
@@ -422,7 +425,7 @@ class FastNaoModule(ALModule):
 			self.tts.say(lang.ChorDiscError)
 
 	def onTripleChest(self, *_args):
-		"""  """
+		""" Start/stop the menu """
 		if self.isFastNaoRunning:
 			self.stop()
 		else:
