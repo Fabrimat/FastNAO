@@ -13,22 +13,23 @@ License: %s
 
 confVer = "0.3.2"
 
-try:
-	import config
-	if config.Config_Version != confVer:
-		print("Configuration file not valid. Please update it.")
-		sys.exit(1)
-except ImportError:
-	print("Configuration file not found.")
-
-FastNAO = None
-lang = None
-
 import sys
 import time
 import subprocess
 import socket
 import os
+
+try:
+	from inc import config
+	if config.Config_Version != confVer:
+		print("Configuration file not valid. Please update it.")
+		sys.exit(1)
+except ImportError:
+	print("Configuration file not found.")
+	sys.exit(1)
+
+FastNAO = None
+lang = None
 
 from optparse import OptionParser
 
@@ -53,30 +54,32 @@ def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port
 		return False
 
 class Menu:
-	_menu = {
-		"00.init":lang.NothingSelected,
-		"01.disconnect":lang.Disconnect,
-		"02.activateWiFi":lang.WiFiOn,
-		"03.deactivateWiFi":lang.WiFiOff,
-		"04.autonomousLifeToggle":lang.AutoLifeToggle,
-		"05.changeOffsetFromFloor":lang.ChangeOffsetFloor,
-		"06.changeVolume":lang.ChangeVolume,
-		"07.status":lang.Status,
-		#"08.fastReboot":lang.FastReboot,
-		"99.close":lang.Close,
-	}
-	_menuKeys = sorted(_menu.iterkeys())
-	_menuVal = 0
-	_menuLen = len(_menu)
-	_menuSelected = False
+	global lang
+
 
 	indexValue = 3
 
 	def __init__(self, name):
+		self._menu = {
+			"00.init":lang.NothingSelected,
+			"01.disconnect":lang.Disconnect,
+			"02.activateWiFi":lang.WiFiOn,
+			"03.deactivateWiFi":lang.WiFiOff,
+			"04.autonomousLifeToggle":lang.AutoLifeToggle,
+			"05.changeOffsetFromFloor":lang.ChangeOffsetFloor,
+			"06.changeVolume":lang.ChangeVolume,
+			"07.status":lang.Status,
+			#"08.fastReboot":lang.FastReboot,
+			"99.close":lang.Close,
+		}
+		self._menuKeys = sorted(self._menu.iterkeys())
+		self._menuVal = 0
+		self._menuLen = len(self._menu)
+		self._menuSelected = False
 		self._name = name
 
 	def getActionKey(self):
-		return self._menuKeys[self._menuVal][indexValue:]
+		return self._menuKeys[self._menuVal][self.indexValue:]
 
 	def incrementAction(self):
 		if self._menuVal >= self._menuLen-1:
@@ -111,7 +114,9 @@ class Menu:
 		self._menuSelected = self._menuKeys[self._menuVal]
 
 	def getSelectedKey(self):
-		return self._menuSelected[indexValue:]
+		if (self._menuSelected == False):
+			return self._menuSelected
+		return self._menuSelected[self.indexValue:]
 
 	def getSelectedLang(self):
 		if self._menuSelected:
@@ -210,23 +215,28 @@ class RobotOffsetFromFloor:
 		self._name = name
 
 class Language:
-
 	dir = "inc/lang/"
 
 	def __init__(self, name, module):
 		self._name = name
 		self._module = module
+		self.setDefaultLanguage()
+		self.importLanguage()
 
 	def supportedLanguages(self):
 		locales = []
 		langFiles = []
 
 		i = 0
-		for filename in os.listdir(dir):
+		for filename in os.listdir(self.dir):
 			if filename.endswith("-lang.py"):
 				(locale, file) = filename.split("-")
-				langFiles.append(__import__("%s%s-lang" %(dir,locale)))
-				langs.append(locale)
+				try:
+					langFiles.append(__import__("%s%s-lang" %(self.dir.replace("/","."),locale), fromlist=["%s-lang" %(locale)]))
+					print(__import__("%s%s-lang" %(self.dir.replace("/","."),locale), fromlist=["%s-lang" %(locale)]))
+				except ImportError:
+					print("Error importing language file.")
+				locales.append(locale)
 				i+=1
 		return locales, langFiles
 
@@ -243,7 +253,7 @@ class Language:
 					i+=1
 			else:
 				try:
-					lang = __import__("%sen_US-lang" %(dir))
+					lang = __import__("%sen_US-lang" %(self.dir.replace("/",".")))
 				except ImportError:
 					print("Error importing language file.")
 					return False
@@ -252,7 +262,9 @@ class Language:
 			return False
 		return True
 
-	def setDefaultLanguage(self, defaultLang = _module.getLanguage()):
+	def setDefaultLanguage(self, defaultLang = ""):
+		if (defaultLang == ""):
+			defaultLang = self._module.getLanguage()
 		self._defaultLanguage = defaultLang
 		self._language = self._defaultLanguage
 
@@ -262,7 +274,10 @@ class Language:
 	def getlanguage(self):
 		return self._language
 
-	def setLanguage(self, language =lang.LanguageName):
+	def setLanguage(self, language = ""):
+		if (language == ""):
+			global lang
+			language = lang.LanguageName
 		self._module.setLanguage(language)
 
 	def getName(self):
@@ -274,9 +289,6 @@ class Language:
 
 
 class FastNaoModule(ALModule):
-
-	volume = Volume(self.getName(), self)
-	offset = RobotOffsetFromFloor(self.getName(), self)
 
 	def __init__(self, name):
 		ALModule.__init__(self, name)
@@ -356,9 +368,17 @@ class FastNaoModule(ALModule):
 			self.notification = None
 			warnLevel = 1
 
+
+
+		self._language = Language(name, self.tts)
+		#lang = self._language
+		global lang
+		lang.test()
 		if lang.LanguageName not in self.tts.getAvailableLanguages():
 			self.logger.error("Language not installed on Nao, please install it.")
 			sys.exit(1)
+
+
 
 		if warnLevel > 0:
 			sys.exit(1)
@@ -371,7 +391,6 @@ class FastNaoModule(ALModule):
 		self._menu = Menu(name)
 		self._volume = Volume(name, self.audioDev, config.Volume_Difference)
 		self._offset = RobotOffsetFromFloor(name, self.autoLife, config.Offset_From_Floor_Difference)
-		self._language = Language(name, self.tts)
 
 		self.checkDisk()
 
@@ -387,6 +406,7 @@ class FastNaoModule(ALModule):
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName(),
 			"onTripleChest")
+		"""
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
 			"onFrontHead")
@@ -396,6 +416,7 @@ class FastNaoModule(ALModule):
 		memory.subscribeToEvent("RearTactilTouched",
 			self.getName(),
 			"onRearHead")
+		"""
 
 	def checkDisk(self):
 		""" Return occupied disk percentage """
