@@ -29,7 +29,7 @@ UnknownError = "Errore sconosciuto."
 
 MainMenuChange = "%s"
 
-Disconnect = "Disconnetti Choregraphe"
+Disconnect = "Disconnetti Coregraphe"
 WiFiOn = "Attiva UaiFai"
 WiFiOff = "Disattiva UaiFai"
 AutoLifeToggle = "Alterna la vita autonoma"
