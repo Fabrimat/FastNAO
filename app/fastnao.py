@@ -139,6 +139,16 @@ class Volume:
 		self._volume = self._defaultVolume
 		self._muted = self._defaultMuted
 
+	def setDefaultVolumeRunTime(self, volume):
+		self._defaultVolume = volume
+		self._volume = volume
+		if (volume > 0):
+			self._defaultMuted = False
+			self._muted = False
+		else:
+			self._defaultMuted = True
+			self._muted = True
+
 	def volumeOn(self, value=config.Default_Volume):
 		self.setDefaultVolume()
 		self._module.muteAudioOut(False)
@@ -157,6 +167,8 @@ class Volume:
 			self._volume += value
 		else:
 			self._volume = 100
+		self._module.setOutputVolume(self._volume)
+		self.setDefaultVolumeRunTime(self._volume)
 
 	def getVolume(self):
 		return self._volume
@@ -164,12 +176,15 @@ class Volume:
 	def setVolume(self):
 		self._module.muteAudioOut(False)
 		self._module.setOutputVolume(self._volume)
+		self.setDefaultVolumeRunTime(self._volume)
 
 	def decrementVolume(self, value=_difference):
 		if self._volume > 0+value:
 			self._volume -= value
 		else:
 			self._volume = 0
+		self._module.setOutputVolume(self._volume)
+		self.setDefaultVolumeRunTime(self._volume)
 
 	def getName(self):
 		return self._name
@@ -373,7 +388,6 @@ class FastNaoModule(ALModule):
 		self._language = Language(name, self.tts)
 		#lang = self._language
 		global lang
-		lang.test()
 		if lang.LanguageName not in self.tts.getAvailableLanguages():
 			self.logger.error("Language not installed on Nao, please install it.")
 			sys.exit(1)
@@ -463,6 +477,15 @@ class FastNaoModule(ALModule):
 		if config.Intro:
 			self.tts.say(lang.Welcome1)
 			self.tts.say(lang.Welcome2)
+		memory.subscribeToEvent("FrontTactilTouched",
+			self.getName(),
+			"onFrontHead")
+		memory.subscribeToEvent("MiddleTactilTouched",
+			self.getName(),
+			"onMiddleHead")
+		memory.subscribeToEvent("RearTactilTouched",
+			self.getName(),
+			"onRearHead")
 
 	def onFrontHead(self, *_args):
 		global memory
@@ -503,9 +526,10 @@ class FastNaoModule(ALModule):
 		memory.unsubscribeToEvent("RearTactilTouched",
 			self.getName())
 
+		shouldClose = True
 		if not self._menu.getSelectedKey():
 			self._menu.setSelected()
-			self._actionChooser()
+			shouldClose = self._actionChooser()
 		elif self._menu.getSelectedKey() == "changeOffsetFromFloor":
 			self._offset.setOffset()
 			self.tts.say(lang.OffsetSet %(self._offset.getOffset()))
@@ -516,6 +540,9 @@ class FastNaoModule(ALModule):
 			self.stop()
 		else:
 			pass
+
+		if (shouldClose):
+			return
 
 		memory.subscribeToEvent("FrontTactilTouched",
 			self.getName(),
@@ -562,6 +589,7 @@ class FastNaoModule(ALModule):
 			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
 			self.stop()
+			return
 		elif key == "disconnect":
 			self.disconnect()
 			self.stop()
@@ -579,14 +607,19 @@ class FastNaoModule(ALModule):
 			self.stop()
 		elif key == "changeOffsetFromFloor":
 			self._offset.resetOffset()
+			return False
 		elif key == "changeVolume":
 			self._volume.setDefaultVolume()
+			self.tts.say(lang.ChooseVolume)
+			return False
 		elif key == "fastReboot":
 			self.fastReboot()
 		elif key == "close":
 			self.stop()
 		else:
 			self.tts.say(lang.UnknownError)
+
+		return True
 
 	def activateWiFi(self):
 		if self.connectionManager is None:
@@ -708,9 +741,6 @@ class FastNaoModule(ALModule):
 		error
 		"""
 
-	def changeVolume(self):
-		self.tts.say("Not supported yet")
-
 	def autonomousLifeToggle(self):
 		lifeState = self.autoLife.getState()
 		if lifeState == "solitary" or lifeState == "interactive":
@@ -743,7 +773,6 @@ class FastNaoModule(ALModule):
 
 	def unload(self):
 		self.stop()
-
 		for sub in memory.getSubscribers("MiddleTactilTouched"):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("MiddleTactilTouched",
@@ -760,7 +789,6 @@ class FastNaoModule(ALModule):
 			if sub == self.getName():
 				memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
 				self.getName())
-
 		sys.exit(0)
 
 def main():

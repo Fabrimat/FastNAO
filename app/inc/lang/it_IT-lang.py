@@ -12,9 +12,9 @@ LanguageName = "Italian"
 Enabled = "FastNAO abilitato correttamente!"
 FailedEnabling = "Ci sono stati degli errori nel caricamento di FastNAO."
 
-ChorDiscSucc = "Connessione a Coregraf rimossa con successo."
-ChorDiscFail = "Connessione a Coregraf non trovata."
-ChorDiscError = "Errore durante la rimozione della connessione a Coregraf."
+ChorDiscSucc = "Connessione a Còregraf rimossa con successo."
+ChorDiscFail = "Connessione a Còregraf non trovata."
+ChorDiscError = "Errore durante la rimozione della connessione a Còregraf."
 
 Welcome1 = "Hai avviato il menù avanzato, spero che tu sappia cosa stai facendo!"
 Welcome2 = "Usa i sensori sulla mia testa per muoverti nel menù."
@@ -22,6 +22,7 @@ Welcome2 = "Usa i sensori sulla mia testa per muoverti nel menù."
 OffsetChange = "Altezza dal pavimento: %s"
 OffsetSet = "Altezza dal pavimento impostata a %s!"
 
+ChooseVolume = "Scegli il volume"
 VolumeChange = "Volume: %s"
 VolumeSet = "Volume impostato a %s!"
 
@@ -29,7 +30,7 @@ UnknownError = "Errore sconosciuto."
 
 MainMenuChange = "%s"
 
-Disconnect = "Disconnetti Coregraphe"
+Disconnect = "Disconnetti Còregraf"
 WiFiOn = "Attiva UaiFai"
 WiFiOff = "Disattiva UaiFai"
 AutoLifeToggle = "Alterna la vita autonoma"

@@ -22,6 +22,7 @@ Welcome2 = "Use my head sensors to move between the options."
 OffsetChange = "Offset: %s"
 OffsetSet = "Offset set to %s!"
 
+ChooseVolume = "Choose the volume"
 VolumeChange = "Volume: %s"
 VolumeSet = "Volume set to %s!"
 
