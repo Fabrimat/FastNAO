@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.10'
+__version__ = '0.10.1'
 
 print("""
 FastNAO v%s started!
@@ -11,7 +11,7 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = "0.3.2"
+confVer = "0.3.3"
 
 import sys
 import time

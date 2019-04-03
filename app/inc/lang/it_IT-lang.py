@@ -74,7 +74,7 @@ Surrdender = "Mi arrendo."
 Reboot = "Mi sto riavviando!"
 
 # Do not change!
-Config_Version = "0.3.2"
+Config_Version = "0.3.3"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

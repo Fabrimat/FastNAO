@@ -52,7 +52,7 @@ Internet_Check_Port = 53
 Internet_Check_TimeOut = 3
 
 # Do not change!
-Config_Version = "0.3.2"
+Config_Version = "0.3.3"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')
