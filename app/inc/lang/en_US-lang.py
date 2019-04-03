@@ -19,6 +19,7 @@ ChorDiscError = "Error removing Choregraphe connection."
 Welcome1 = "You entered the advanced menu, hope you know what you are doing!"
 Welcome2 = "Use my head sensors to move between the options."
 
+ChooseOffset = "Choose the offset from floor"
 OffsetChange = "Offset: %s"
 OffsetSet = "Offset set to %s!"
 

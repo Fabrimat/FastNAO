@@ -19,7 +19,8 @@ ChorDiscError = "Errore durante la rimozione della connessione a Còregraf."
 Welcome1 = "Hai avviato il menù avanzato, spero che tu sappia cosa stai facendo!"
 Welcome2 = "Usa i sensori sulla mia testa per muoverti nel menù."
 
-OffsetChange = "Altezza dal pavimento: %s"
+ChooseOffset = "Scegli l'altezza dal pavimento"
+OffsetChange = "Altezza: %s"
 OffsetSet = "Altezza dal pavimento impostata a %s!"
 
 ChooseVolume = "Scegli il volume"

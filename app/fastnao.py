@@ -607,6 +607,7 @@ class FastNaoModule(ALModule):
 			self.stop()
 		elif key == "changeOffsetFromFloor":
 			self._offset.resetOffset()
+			self.tts.say(lang.ChooseOffset)
 			return False
 		elif key == "changeVolume":
 			self._volume.setDefaultVolume()
@@ -682,10 +683,10 @@ class FastNaoModule(ALModule):
 		if(self.connectionManager.getTetheringEnable("wifi")):
 			self.tts.say(lang.WifiActive)
 
-			if Say_SSID:
-				ssid = self.connectionManager.tetheringName()
+			if config.Say_SSID:
+				ssid = self.connectionManager.tetheringName("wifi")
 				checkSsid = ""
-				if Spell_SSID:
+				if config.Spell_SSID:
 					for char in ssid:
 						try:
 							int(char)
@@ -703,10 +704,10 @@ class FastNaoModule(ALModule):
 					checkSsid = ssid
 				self.tts.say(lang.WifiSSID %(checkSsid))
 
-			if Say_Passowrd:
-				password = self.connectionManager.tetheringPassphrase()
+			if config.Say_Passowrd:
+				password = self.connectionManager.tetheringPassphrase("wifi")
 				checkPassword = ""
-				if Spell_Password:
+				if config.Spell_Password:
 					for char in password:
 						try:
 							int(char)
