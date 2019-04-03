@@ -627,9 +627,8 @@ class FastNaoModule(ALModule):
 			self.tts.say(lang.WiFiError)
 			return
 		if not self.connectionManager.getTetheringEnable("wifi"):
-			self.connectionManager.setCountry(wifiCountry)
-			self.connectionManager.enableTethering("wifi", tetheringSSID, \
-				tetheringPassword)
+			self.connectionManager.enableTethering("wifi", config.Tethering_SSID, config.Tethering_Password)
+			self.connectionManager.setCountry(config.Wifi_Country)
 			self.tts.say(lang.WifiActivated)
 		else:
 			self.tts.say(lang.WifiAlreadyActive)
