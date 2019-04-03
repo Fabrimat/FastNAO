@@ -24,7 +24,7 @@ You can help me by <a href="https://github.com/Fabrimat/FastNAO/issues">proposin
 FastNAO is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for more information.
 
 ### Project Status & Download
-FastNAO's current version is **v0.8.7**. You can download the latest pre-release from <a href="https://github.com/Fabrimat/FastNAO/releases/tag/v0.8.7">here</a>. Otherwise you can get the latest development version by cloning this repository.
+FastNAO's current version is **v0.10.1**. You can download the latest pre-release from <a href="https://github.com/Fabrimat/FastNAO/releases/tag/v0.10.1">here</a>. Otherwise you can get the latest development version by cloning this repository.
 
 ## Italiano
 ### Cosa è
