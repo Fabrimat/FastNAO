@@ -589,7 +589,7 @@ class FastNaoModule(ALModule):
 			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
 			self.stop()
-			return
+			return True
 		elif key == "disconnect":
 			self.disconnect()
 			self.stop()
