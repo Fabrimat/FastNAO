@@ -3,7 +3,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.10.1'
+__version__ = '0.10.2'
 
 print("""
 FastNAO v%s started!
@@ -18,6 +18,9 @@ import time
 import subprocess
 import socket
 import os
+
+
+scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 try:
 	from inc import config
@@ -243,7 +246,7 @@ class Language:
 		langFiles = []
 
 		i = 0
-		for filename in os.listdir(self.dir):
+		for filename in os.listdir(scriptDir + self.dir):
 			if filename.endswith("-lang.py"):
 				(locale, file) = filename.split("-")
 				try:
@@ -589,7 +592,7 @@ class FastNaoModule(ALModule):
 			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
 			self.stop()
-			return True
+			return
 		elif key == "disconnect":
 			self.disconnect()
 			self.stop()
