@@ -8,8 +8,10 @@ FastNAO has been tested only on Nao H25 (V5) with Naoqi 2.1.4 and is licensed un
 ### How to install
 1. Upload the script on the robot via SFTP (using FileZilla or another client) to `/home/nao/app/fastnao.py` (or wherever you want). Do not forget the inc/ folder!
 2. Using an SSH client such as Putty, edit the autoload.ini file using `nano /home/nao/naoqi/preferences/autoload.ini` and append this code:<br/>
-	`[python]`<br/>
-	`/home/nao/app/fastnao.py`
+```
+[python]
+/home/nao/app/fastnao.py
+```
 3. Restart Naoqi using `nao restart` command.
 
 Now you just have to press 3 times the Nao's chest button to start FastNAO and then use the head sensors to move between the options.
@@ -35,8 +37,10 @@ FastNAO è stato testato solo su un Nao H25 (V5) con Naoqi 2.1.4 ed è rilasciat
 ### Come si installa
 1. Carica lo script sul robot via SFTP (utilizzando Filezilla o un qualunque altro client) in `/home/nao/app/fastnao.py` (o dove preferisci). Non dimenticare la cartella inc/!
 2. Effettuando l'accesso via SSH (utlizzando Putty o un qualunque altro client) modifica il file autoload.ini con il comando `nano /home/nao/naoqi/preferences/autoload.ini` e aggiungi il seguente codice:<br/>
-	`[python]`<br/>
-	`/home/nao/app/fastnao.py`
+```
+[python]
+/home/nao/app/fastnao.py
+```
 3. Riavvia Naoqi utilizzando il comando `nao restart`.
 
 Adesso devi premere 3 volte il pulsante sul petto del Nao per avviare FastNAO e successivamente utilizzate i pulsanti touch posizionati sulla testa per spostarti tra le opzioni.
