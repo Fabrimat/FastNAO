@@ -41,9 +41,12 @@ Default_Volume = 70
 Offset_From_Floor_Difference = 1.0
 Volume_Difference = 10
 
-Silent_Bootup = False
+Silent_Bootup = True
 # Say the message when pressing three times on the chest button
 Intro = False
+
+Check_New_Version = True
+Allow_PreReleases = False
 
 # Options for Internet connection check
 # Don't touch if you don't know what you are doing
@@ -51,8 +54,18 @@ Internet_Check_IP = "8.8.8.8"
 Internet_Check_Port = 53
 Internet_Check_TimeOut = 3
 
+# Modules
+Disconnect_Module = True
+WiFi_On_Module = True
+WiFi_Off_Module = True
+AutonomousLife_Module = False
+OffsetFromFloor_Module = False
+Volume_Module = True
+Status_Module = True
+
+
 # Do not change!
-Config_Version = "0.3.3"
+Config_Version = "0.3.4"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

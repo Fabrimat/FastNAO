@@ -10,7 +10,8 @@
 LanguageName = "English"
 
 Enabled = "FastNAO enabled succesfully!"
-FailedEnabling = "Errors occurred when enabling FastNAO."
+
+NewVersion = "A new FastNAO version is avaiable!"
 
 ChorDiscSucc = "Choregraphe connection removed successfully."
 ChorDiscFail = "Choregraphe connection not found."
@@ -74,7 +75,7 @@ Surrdender = "I surrender."
 Reboot = "Rebooting!"
 
 # Do not change!
-Config_Version = "0.3.3"
+Config_Version = "0.3.4"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

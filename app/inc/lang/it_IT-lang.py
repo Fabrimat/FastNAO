@@ -10,7 +10,8 @@
 LanguageName = "Italian"
 
 Enabled = "FastNAO abilitato correttamente!"
-FailedEnabling = "Ci sono stati degli errori nel caricamento di FastNAO."
+
+NewVersion = "E' disponibile una nuova versione di FastNAO!"
 
 ChorDiscSucc = "Connessione a Còregraf rimossa con successo."
 ChorDiscFail = "Connessione a Còregraf non trovata."
@@ -74,7 +75,7 @@ Surrdender = "Mi arrendo."
 Reboot = "Mi sto riavviando!"
 
 # Do not change!
-Config_Version = "0.3.3"
+Config_Version = "0.3.4"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

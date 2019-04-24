@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 # -*- encoding: UTF-8 -*-
+#  ______        _   _   _          ____
+# |  ____|      | | | \ | |   /\   / __ \
+# | |__ __ _ ___| |_|  \| |  /  \ | |  | |
+# |  __/ _` / __| __| . ` | / /\ \| |  | |
+# | | | (_| \__ \ |_| |\  |/ ____ \ |__| |
+# |_|  \__,_|___/\__|_| \_/_/    \_\____/
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.10.2'
+__version__ = '0.10.3'
 
 print("""
 FastNAO v%s started!
@@ -11,16 +17,15 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = "0.3.3"
+confVer = "0.3.4"
 
 import sys
 import time
 import subprocess
 import socket
 import os
-
-
-scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
+import json
+import urllib2
 
 try:
 	from inc import config
@@ -30,9 +35,6 @@ try:
 except ImportError:
 	print("Configuration file not found.")
 	sys.exit(1)
-
-FastNAO = None
-lang = None
 
 from optparse import OptionParser
 
@@ -47,6 +49,10 @@ except:
 
 session = qi.Session()
 memory = None
+scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
+FastNAO = None
+lang = None
+newVersionFound = False
 
 def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port, timeout=config.Internet_Check_TimeOut):
 	try:
@@ -56,25 +62,48 @@ def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port
 	except:
 		return False
 
+def checkNewVersion():
+	return False
+	if(config.Check_New_Version == True and checkInternet()):
+		j = urllib2.urlopen("https://api.github.com/repos/fabrimat/fastnao/releases/latest")
+		j_obj = json.load(j)
+		if(j_obj['tag_name'] != 'v' + __version__):
+			if(j_obj['prerelease'] == "true"):
+				if(config.Allow_PreReleases == True):
+					return j_obj['html_url']
+			else:
+				return j_obj['html_url']
+	return False
+
 class Menu:
 	global lang
-
 
 	indexValue = 3
 
 	def __init__(self, name):
 		self._menu = {
 			"00.init":lang.NothingSelected,
-			"01.disconnect":lang.Disconnect,
-			"02.activateWiFi":lang.WiFiOn,
-			"03.deactivateWiFi":lang.WiFiOff,
-			"04.autonomousLifeToggle":lang.AutoLifeToggle,
-			"05.changeOffsetFromFloor":lang.ChangeOffsetFloor,
-			"06.changeVolume":lang.ChangeVolume,
-			"07.status":lang.Status,
-			#"08.fastReboot":lang.FastReboot,
-			"99.close":lang.Close,
 		}
+
+		if(config.Disconnect_Module):
+			self._menu.update({"01.disconnect":lang.Disconnect})
+		if(config.WiFi_On_Module):
+			self._menu.update({"02.activateWiFi":lang.WiFiOn})
+		if(config.WiFi_Off_Module):
+			self._menu.update({"03.deactivateWiFi":lang.WiFiOff})
+		if(config.AutonomousLife_Module):
+			self._menu.update({"04.autonomousLifeToggle":lang.AutoLifeToggle})
+		if(config.OffsetFromFloor_Module):
+			self._menu.update({"05.changeOffsetFromFloor":lang.ChangeOffsetFloor})
+		if(config.Volume_Module):
+			self._menu.update({"06.changeVolume":lang.ChangeVolume})
+		if(config.Status_Module):
+			self._menu.update({"07.status":lang.Status})
+		#if(config.Reboot_Module):
+		#	self._menu.update({"08.fastReboot":lang.FastReboot})
+
+		self._menu.update({"99.close":lang.Close})
+
 		self._menuKeys = sorted(self._menu.iterkeys())
 		self._menuVal = 0
 		self._menuLen = len(self._menu)
@@ -128,8 +157,6 @@ class Menu:
 			self._menu["init"]
 
 class Volume:
-
-	_difference = 10
 	def __init__(self, name, module, defaultDifference = 10):
 		self._name = name
 		self._difference = defaultDifference
@@ -165,7 +192,9 @@ class Volume:
 		self._module.muteAudioOut(self._defaultMuted)
 		self._module.setOutputVolume(self._defaultVolume)
 
-	def incrementVolume(self, value=_difference):
+	def incrementVolume(self, value=None):
+		if(value == None):
+			value=self._difference
 		if self._volume < 100-value:
 			self._volume += value
 		else:
@@ -181,7 +210,9 @@ class Volume:
 		self._module.setOutputVolume(self._volume)
 		self.setDefaultVolumeRunTime(self._volume)
 
-	def decrementVolume(self, value=_difference):
+	def decrementVolume(self, value=None):
+		if(value == None):
+			value=self._difference
 		if self._volume > 0+value:
 			self._volume -= value
 		else:
@@ -196,8 +227,6 @@ class Volume:
 		self._name = name
 
 class RobotOffsetFromFloor:
-
-	_difference = 1
 	def __init__(self, name, module, defaultDifference = 1):
 		self._name = name
 		self._difference = defaultDifference
@@ -211,10 +240,14 @@ class RobotOffsetFromFloor:
 	def resetOffset(self):
 		self._module.setRobotOffsetFromFloor(self._defaultOffsetFromFloor)
 
-	def incrementOffset(self, value=_difference):
+	def incrementOffset(self, value=None):
+		if(value == None):
+			value=self._difference
 		self._offsetFromFloor += value
 
-	def decrementOffset(self, value=_difference):
+	def decrementOffset(self, value=None):
+		if(value == None):
+			value=self._difference
 		if self._offsetFromFloor > 0+value:
 			self._offsetFromFloor -= value
 		else:
@@ -304,8 +337,6 @@ class Language:
 	def setName(self, name):
 		self._name = name
 
-
-
 class FastNaoModule(ALModule):
 
 	def __init__(self, name):
@@ -389,26 +420,24 @@ class FastNaoModule(ALModule):
 
 
 		self._language = Language(name, self.tts)
-		#lang = self._language
 		global lang
 		if lang.LanguageName not in self.tts.getAvailableLanguages():
 			self.logger.error("Language not installed on Nao, please install it.")
 			sys.exit(1)
 
-
-
 		if warnLevel > 0:
 			sys.exit(1)
 		if not config.Silent_Bootup:
-			if warnLevel == 1:
-				self.tts.say(lang.FailedEnabling)
-			else:
-				self.tts.say(lang.Enabled)
+			self.tts.say(lang.Enabled)
+		else:
+			self.notification.add({"message": lang.Enabled, "severity": "info", "removeOnRead": True})
 
 		self._menu = Menu(name)
 		self._volume = Volume(name, self.audioDev, config.Volume_Difference)
 		self._offset = RobotOffsetFromFloor(name, self.autoLife, config.Offset_From_Floor_Difference)
 
+		if(checkNewVersion() != False):
+			self.notification.add({"message": lang.NewVersion, "severity": "info", "removeOnRead": True})
 		self.checkDisk()
 
 		global memory
@@ -423,24 +452,13 @@ class FastNaoModule(ALModule):
 		memory.subscribeToEvent("ALChestButton/TripleClickOccurred",
 			self.getName(),
 			"onTripleChest")
-		"""
-		memory.subscribeToEvent("FrontTactilTouched",
-			self.getName(),
-			"onFrontHead")
-		memory.subscribeToEvent("MiddleTactilTouched",
-			self.getName(),
-			"onMiddleHead")
-		memory.subscribeToEvent("RearTactilTouched",
-			self.getName(),
-			"onRearHead")
-		"""
 
 	def checkDisk(self):
 		""" Return occupied disk percentage """
 		disk = self.sys.diskFree(False)
 		percent = disk[0][3][1]*100/disk[0][2][1]
 		if percent > 90:
-			self.notification.add(lang.DiskFull)
+			self.notification.add({"message": lang.DiskFull, "severity": "info", "removeOnRead": True})
 
 	def disconnect(self):
 		""" Disconnect Choregraphe forcedly """
@@ -693,7 +711,7 @@ class FastNaoModule(ALModule):
 						try:
 							int(char)
 							integer = True
-						except:
+						except ValueError:
 							integer = False
 						if integer:
 							checkSsid += " %s " %(char)
@@ -733,16 +751,6 @@ class FastNaoModule(ALModule):
 			self.tts.say(lang.InternetOn)
 		else:
 			self.tts.say(lang.InternetOff)
-
-		"""
-		ipv4
-		state
-		type
-		autoconnect
-		security
-		strenght
-		error
-		"""
 
 	def autonomousLifeToggle(self):
 		lifeState = self.autoLife.getState()
@@ -810,6 +818,11 @@ def main():
 	(opts, args_) = parser.parse_args()
 	pip   = opts.pip
 	pport = opts.pport
+
+	update = checkNewVersion()
+	if(update != False):
+		print update
+		time.sleep(1)
 
 	session.connect("tcp://" + str(pip) + ":" + str(pport))
 	myBroker = ALBroker("myBroker",
