@@ -63,9 +63,8 @@ def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port
 		return False
 
 def checkNewVersion():
-	return False
 	if(config.Check_New_Version == True and checkInternet()):
-		j = urllib2.urlopen("https://api.github.com/repos/fabrimat/fastnao/releases/latest")
+		j = urllib2.urlopen("http://www.fabrimat.me/api/fastnao/release.php")
 		j_obj = json.load(j)
 		if(j_obj['tag_name'] != 'v' + __version__):
 			if(j_obj['prerelease'] == "true"):
@@ -458,7 +457,7 @@ class FastNaoModule(ALModule):
 		disk = self.sys.diskFree(False)
 		percent = disk[0][3][1]*100/disk[0][2][1]
 		if percent > 90:
-			self.notification.add({"message": lang.DiskFull, "severity": "info", "removeOnRead": True})
+			self.notification.add({"message": lang.DiskFull, "severity": "warning", "removeOnRead": True})
 
 	def disconnect(self):
 		""" Disconnect Choregraphe forcedly """
