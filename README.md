@@ -7,7 +7,7 @@ FastNAO has been tested only on Nao H25 (V5) with Naoqi 2.1.4 and is licensed un
 
 ### How to install
 1. Upload the script on the robot via SFTP (using FileZilla or another client) to `/home/nao/app/fastnao.py` (or wherever you want). Do not forget the inc/ folder!
-2. Using an SSH client such as Putty, edit the autoload.ini file using `nano /home/nao/naoqi/preferences/autoload.ini` and append this code:<br/>
+2. Using an SSH client such as Putty, edit the autoload.ini file using `nano /home/nao/naoqi/preferences/autoload.ini` and append the following text:<br/>
 ```
 [python]
 /home/nao/app/fastnao.py
@@ -26,7 +26,7 @@ You can help me by <a href="https://github.com/Fabrimat/FastNAO/issues">proposin
 FastNAO is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for more information.
 
 ### Project Status & Download
-FastNAO's current version is **v0.10.2**. You can download the latest release from <a href="https://github.com/Fabrimat/FastNAO/releases/tag/v0.10.2">here</a>. Otherwise you can get the latest development version by cloning this repository.
+FastNAO's current version is **v0.10.3**. You can download the latest release from <a href="https://github.com/Fabrimat/FastNAO/releases/tag/v0.10.3">here</a>. Otherwise you can get the latest development version by cloning this repository.
 
 ## Italiano
 ### Cosa è
@@ -36,7 +36,7 @@ FastNAO è stato testato solo su un Nao H25 (V5) con Naoqi 2.1.4 ed è rilasciat
 
 ### Come si installa
 1. Carica lo script sul robot via SFTP (utilizzando Filezilla o un qualunque altro client) in `/home/nao/app/fastnao.py` (o dove preferisci). Non dimenticare la cartella inc/!
-2. Effettuando l'accesso via SSH (utlizzando Putty o un qualunque altro client) modifica il file autoload.ini con il comando `nano /home/nao/naoqi/preferences/autoload.ini` e aggiungi il seguente codice:<br/>
+2. Effettuando l'accesso via SSH (utlizzando Putty o un qualunque altro client) modifica il file autoload.ini con il comando `nano /home/nao/naoqi/preferences/autoload.ini` e aggiungi il seguente testo:<br/>
 ```
 [python]
 /home/nao/app/fastnao.py
@@ -55,4 +55,4 @@ Puoi aiutarmi <a href="https://github.com/Fabrimat/FastNAO/issues">proponendo mi
 FastNAO è rilasciato sotto licenza Apache 2.0. Clicca su [Licenza](LICENSE) per maggiori informazioni.
 
 ### Stato del progetto & Download
-La versione attuale di FastNAO è **v0.10.2**. Puoi scaricare l'ultima release da <a href="https://github.com/Fabrimat/FastNAO/releases/tag/v0.10.2">qui</a>. Altrimenti puoi ottenere l'ultima versione di sviluppo clonando questo repository.
+La versione attuale di FastNAO è **v0.10.3**. Puoi scaricare l'ultima release da <a href="https://github.com/Fabrimat/FastNAO/releases/tag/v0.10.3">qui</a>. Altrimenti puoi ottenere l'ultima versione di sviluppo clonando questo repository.
