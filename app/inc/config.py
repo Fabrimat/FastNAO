@@ -19,13 +19,11 @@ Nao_IP = "127.0.0.1"
 Nao_Port = 9559
 
 # Nao WiFi tethering's SSID
-Tethering_SSID = "Nao-WiFi"
+Tethering_SSID = "Nao-[name]-WiFi"
 Tethering_SSID_Append_Name = True
 Tethering_SSID_Append_Random = True
 # Nao WiFi tethering's password
 Tethering_Password = "nao12345"
-# WiFi country, you should use your own country to avoid fines
-Wifi_Country = "IT"
 
 # Say SSID during Status
 Say_SSID = True
@@ -65,7 +63,7 @@ Status_Module = True
 
 
 # Do not change!
-Config_Version = "0.3.4"
+Config_Version = "0.3.5"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')

@@ -17,7 +17,7 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = "0.3.4"
+confVer = "0.3.5"
 
 import sys
 import time
@@ -64,7 +64,10 @@ def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port
 
 def checkNewVersion():
 	if(config.Check_New_Version == True and checkInternet()):
-		j = urllib2.urlopen("http://www.fabrimat.me/api/fastnao/release.php")
+		try:
+			j = urllib2.urlopen("http://www.fabrimat.me/api/fastnao/release.php")
+		except:
+			return False
 		j_obj = json.load(j)
 		if(j_obj['tag_name'] != 'v' + __version__):
 			if(j_obj['prerelease'] == "true"):
@@ -647,9 +650,10 @@ class FastNaoModule(ALModule):
 			self.tts.say(lang.WiFiError)
 			return
 		if not self.connectionManager.getTetheringEnable("wifi"):
-			self.connectionManager.enableTethering("wifi", config.Tethering_SSID, config.Tethering_Password)
-			self.connectionManager.setCountry(config.Wifi_Country)
-			self.tts.say(lang.WifiActivated)
+			try:
+				self.connectionManager.enableTethering("wifi", config.Tethering_SSID.replace("[name]", self.sys.robotName()), config.Tethering_Password)
+			except Exception as e:
+				print(e)
 		else:
 			self.tts.say(lang.WifiAlreadyActive)
 
