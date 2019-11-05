@@ -9,7 +9,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.10.3'
+__version__ = '0.10.4'
 
 print("""
 FastNAO v%s started!
@@ -440,7 +440,10 @@ class FastNaoModule(ALModule):
 
 		if(checkNewVersion() != False):
 			self.notification.add({"message": lang.NewVersion, "severity": "info", "removeOnRead": True})
-		self.checkDisk()
+		
+		self.robotVersion = self.sys.systemVersion()
+			
+		self.checkDisk(self.robotVersion)
 
 		global memory
 		memory = ALProxy("ALMemory")
@@ -455,12 +458,18 @@ class FastNaoModule(ALModule):
 			self.getName(),
 			"onTripleChest")
 
-	def checkDisk(self):
+	def checkDisk(self, version):
 		""" Return occupied disk percentage """
 		disk = self.sys.diskFree(False)
 		percent = disk[0][3][1]*100/disk[0][2][1]
-		if percent > 90:
-			self.notification.add({"message": lang.DiskFull, "severity": "warning", "removeOnRead": True})
+		if version.startswith("2.1"):
+			if percent > 90:
+				self.notification.add({"message": lang.DiskFull, "severity": "warning", "removeOnRead": True})
+		elif version.startswith("2.8"):
+			if percent < 10:
+				self.notification.add({"message": lang.DiskFull, "severity": "warning", "removeOnRead": True})
+		else:
+			self.logger.error("Can't get disk space. Nao version not supported!")
 
 	def disconnect(self):
 		""" Disconnect Choregraphe forcedly """
@@ -496,7 +505,7 @@ class FastNaoModule(ALModule):
 		self.language = self.tts.getLanguage()
 		self._language.setLanguage()
 
-		self.audio.playFile("/usr/share/naoqi/wav/bip_gentle.wav")
+		self.audio.playFile(scriptDir + "inc/wav/bip_gentle.wav")
 		if config.Intro:
 			self.tts.say(lang.Welcome1)
 			self.tts.say(lang.Welcome2)
@@ -609,7 +618,7 @@ class FastNaoModule(ALModule):
 	def _actionChooser(self):
 		key = self._menu.getSelectedKey()
 		if key == "init":
-			self.audio.playFile("/usr/share/naoqi/wav/fall_jpj.wav")
+			self.audio.playFile(scriptDir + "inc/wav/fall_jpj.wav")
 			self.tts.say(lang.NothingSelected)
 			self.stop()
 			return
@@ -669,28 +678,19 @@ class FastNaoModule(ALModule):
 
 	def status(self):
 		global memory
-		realNotVirtual = False
-		try:
-			memory.getData( "DCM/Time" )
-			if( memory.getData( "DCM/Simulation" ) != 1 ):
-				realNotVirtual = True
-			else:
-				import os
-				realNotVirtual = os.path.exists("/home/nao")
-		except:
-			pass
+		realNotVirtual = os.path.exists("/home/nao")
 
 		if realNotVirtual:
-			import socket
 			robotName = socket.gethostname()
 			naoName = robotName
 		else:
 			naoName = lang.VirtualRobotName
 
 		self.tts.say(lang.Name %(naoName))
-
-		batteryCharge = memory.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value")
-		self.tts.say(lang.Battery %(batteryCharge*100))
+		
+		if realNotVirtual:
+			batteryCharge = memory.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value")
+			self.tts.say(lang.Battery %(batteryCharge*100))
 
 		autoLifeStatus = self.autoLife.getState()
 		if autoLifeStatus == "solitary":
@@ -787,22 +787,12 @@ class FastNaoModule(ALModule):
 
 	def unload(self):
 		self.stop()
-		for sub in memory.getSubscribers("MiddleTactilTouched"):
-			if sub == self.getName():
-				memory.unsubscribeToEvent("MiddleTactilTouched",
-				self.getName())
-		for sub in memory.getSubscribers("FrontTactilTouched"):
-			if sub == self.getName():
-				memory.unsubscribeToEvent("FrontTactilTouched",
-				self.getName())
-		for sub in memory.getSubscribers("RearTactilTouched"):
-			if sub == self.getName():
-				memory.unsubscribeToEvent("RearTactilTouched",
-				self.getName())
-		for sub in memory.getSubscribers("ALChestButton/TripleClickOccurred"):
-			if sub == self.getName():
-				memory.unsubscribeToEvent("ALChestButton/TripleClickOccurred",
-				self.getName())
+		events = ["MiddleTactilTouched","FrontTactilTouched","RearTactilTouched","ALChestButton/TripleClickOccurred"]
+		for event in events:
+			for sub in memory.getSubscribers(event):
+				if sub == self.getName():
+					memory.unsubscribeToEvent(event,
+					self.getName())
 		sys.exit(0)
 
 def main():
