@@ -75,7 +75,7 @@ Surrdender = "I surrender."
 Reboot = "Rebooting!"
 
 # Do not change!
-Config_Version = "0.3.4"
+Config_Version = "0.3.5"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')
