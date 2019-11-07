@@ -48,7 +48,7 @@ Allow_PreReleases = False
 
 # Options for Internet connection check
 # Don't touch if you don't know what you are doing
-Internet_Check_IP = "8.8.8.8"
+Internet_Check_IP = "1.1.1.1"
 Internet_Check_Port = 53
 Internet_Check_TimeOut = 3
 

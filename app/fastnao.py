@@ -52,7 +52,6 @@ memory = None
 scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
 FastNAO = None
 lang = None
-newVersionFound = False
 shutdown = False
 
 def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port, timeout=config.Internet_Check_TimeOut):
@@ -312,7 +311,7 @@ class Language:
 					print("Error importing language file.")
 					return False
 		if lang.Config_Version != confVer:
-			print("Language file not valid. Please report the error.")
+			print("Language file version not valid. Please check.")
 			return False
 		return True
 
