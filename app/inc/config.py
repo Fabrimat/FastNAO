@@ -60,7 +60,8 @@ AutonomousLife_Module = False
 OffsetFromFloor_Module = False
 Volume_Module = True
 Status_Module = True
-FastReboot_Module = True
+# Beta!
+FastReboot_Module = False
 
 
 # Do not change!
