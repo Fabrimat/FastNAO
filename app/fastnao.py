@@ -9,7 +9,7 @@
 
 __author__ = 'Fabrimat'
 __license__ = 'Apache License 2.0'
-__version__ = '0.10.4'
+__version__ = '0.11.0'
 
 print("""
 FastNAO v%s started!
