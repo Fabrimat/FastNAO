@@ -17,7 +17,7 @@ Author: %s
 License: %s
 """%(__version__,__author__,__license__))
 
-confVer = "0.3.5"
+confVer = "0.3.6"
 
 import sys
 import time
@@ -53,6 +53,7 @@ scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
 FastNAO = None
 lang = None
 newVersionFound = False
+shutdown = False
 
 def checkInternet(host=config.Internet_Check_IP, port=config.Internet_Check_Port, timeout=config.Internet_Check_TimeOut):
 	try:
@@ -101,8 +102,8 @@ class Menu:
 			self._menu.update({"06.changeVolume":lang.ChangeVolume})
 		if(config.Status_Module):
 			self._menu.update({"07.status":lang.Status})
-		#if(config.Reboot_Module):
-		#	self._menu.update({"08.fastReboot":lang.FastReboot})
+		if(config.FastReboot_Module):
+			self._menu.update({"08.fastReboot":lang.FastReboot})
 
 		self._menu.update({"99.close":lang.Close})
 
@@ -769,11 +770,13 @@ class FastNaoModule(ALModule):
 			self.autoLife.setState("solitary")
 
 	def fastReboot(self):
-		self.motion.rest()
 		self.tts.say(lang.Reboot)
-		self.unload()
-		proc = subprocess.Popen(["nao restart"], stdout=subprocess.PIPE)
-		sys.exit(0)
+		self.motion.rest()
+		self.unload(False)
+		self.logger.info("Test Restart")
+		subprocess.call(["/usr/bin/sudo", "/etc/init.d/naoqi", "restart"])
+		global shutdown
+		shutdown = True
 
 	def stop(self):
 		self.isFastNaoRunning = False
@@ -785,7 +788,7 @@ class FastNaoModule(ALModule):
 		self._offset.resetOffset()
 		self._volume.volumeReset()
 
-	def unload(self):
+	def unload(self, exit = True):
 		self.stop()
 		events = ["MiddleTactilTouched","FrontTactilTouched","RearTactilTouched","ALChestButton/TripleClickOccurred"]
 		for event in events:
@@ -793,7 +796,8 @@ class FastNaoModule(ALModule):
 				if sub == self.getName():
 					memory.unsubscribeToEvent(event,
 					self.getName())
-		sys.exit(0)
+		if(exit):
+			sys.exit(0)
 
 def main():
 	parser = OptionParser()
@@ -830,6 +834,8 @@ def main():
 	try:
 		while True:
 			time.sleep(1)
+			if(shutdown):
+				sys.exit(0)
 	except KeyboardInterrupt:
 		print "Interrupted by user, shutting down..."
 		FastNAO.unload()

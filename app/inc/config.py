@@ -60,10 +60,11 @@ AutonomousLife_Module = False
 OffsetFromFloor_Module = False
 Volume_Module = True
 Status_Module = True
+FastReboot_Module = True
 
 
 # Do not change!
-Config_Version = "0.3.5"
+Config_Version = "0.3.6"
 
 if __name__ == '__main__':
     print "Rkphfr Zr, JGS E H Qbvat?".decode('rot13')
