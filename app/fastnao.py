@@ -660,8 +660,14 @@ class FastNaoModule(ALModule):
 			self.tts.say(lang.WiFiError)
 			return
 		if not self.connectionManager.getTetheringEnable("wifi"):
+			ssid = config.Tethering_SSID
+			if(config.Tethering_SSID_Append_Name):
+				ssid.append("-" + self.sys.robotName())
+			if(config.Tethering_SSID_Append_Random):
+				ssid.append("-")
+				ssid.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
 			try:
-				self.connectionManager.enableTethering("wifi", config.Tethering_SSID.replace("[name]", self.sys.robotName()), config.Tethering_Password)
+				self.connectionManager.enableTethering("wifi", ssid, config.Tethering_Password)
 			except Exception as e:
 				print(e)
 		else:

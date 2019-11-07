@@ -19,7 +19,7 @@ Nao_IP = "127.0.0.1"
 Nao_Port = 9559
 
 # Nao WiFi tethering's SSID
-Tethering_SSID = "Nao-[name]-WiFi"
+Tethering_SSID = "Nao-WiFi"
 Tethering_SSID_Append_Name = True
 Tethering_SSID_Append_Random = True
 # Nao WiFi tethering's password
