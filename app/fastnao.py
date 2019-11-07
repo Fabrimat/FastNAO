@@ -778,7 +778,6 @@ class FastNaoModule(ALModule):
 		self.tts.say(lang.Reboot)
 		self.motion.rest()
 		self.unload(False)
-		self.logger.info("Test Restart")
 		subprocess.call(["/usr/bin/sudo", "/etc/init.d/naoqi", "restart"])
 		global shutdown
 		shutdown = True
