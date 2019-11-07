@@ -778,7 +778,6 @@ class FastNaoModule(ALModule):
 		self.tts.say(lang.Reboot)
 		self.motion.rest()
 		self.unload(False)
-		subprocess.call(["/usr/bin/sudo", "/etc/init.d/naoqi", "restart"])
 		global shutdown
 		shutdown = True
 
@@ -839,6 +838,7 @@ def main():
 		while True:
 			time.sleep(1)
 			if(shutdown):
+				subprocess.call(["/usr/bin/sudo", "/etc/init.d/naoqi", "restart"])
 				sys.exit(0)
 	except KeyboardInterrupt:
 		print "Interrupted by user, shutting down..."
